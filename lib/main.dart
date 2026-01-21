@@ -23,41 +23,42 @@ class _MainAppState extends State<MainApp> {
   bool _textEnabled = true;
   String _text = "Cambio";
 
+  //Sobreescribir para cargar las opciones de configuración.
   @override
   void initState() {
-    //TO Do: Por alguna razón, al inicializar la app, no refleja las configuraciones.
-    //Cargan a la hora de hacer el cambio a modo oscuro o en la configuración.
-    //Pero no aquí.
     _loadPrefs();
     log("initState disparado");
     super.initState();
   }
 
+  ///Enviar usuario a la configuración, cuando vuelva a la pantalla principal, llamar _loadPrefs()
   void _navigateToConfiguration(BuildContext context) async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ConfigurationScreen()),
     );
     //Al volver de la configuración recargar las opciones.
-    setState(() {
       _loadPrefs();
       log("SetState de la configuración disparada");
-    });
   }
 
+  ///Cargar las variables necesarias de SharedPreferences y actualizar widget.
   void _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    //Cargar modo claro
-    _darkMode = prefs.getBool(SettingKeys.darkMode) ?? DefaultValues.darkMode;
-    log("_darkMode: $_darkMode");
+      final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      //Cargar modo de luz
+      _darkMode = prefs.getBool(SettingKeys.darkMode) ?? DefaultValues.darkMode;
+      log("_darkMode: $_darkMode");
+      
+      //Cargar texto
+      _textEnabled =
+          prefs.getBool(SettingKeys.homeText) ?? DefaultValues.homeText;
+      _text = _textEnabled ? "Cambio" : "";
+      log("_textEnabled: $_textEnabled, _text: $_text");
+    });
+    }
 
-    //Cargar texto habilitado
-    _textEnabled =
-        prefs.getBool(SettingKeys.homeText) ?? DefaultValues.homeText;
-    _text = _textEnabled ? "Cambio" : "";
-    log("_textEnabled: $_textEnabled, _text: $_text");
-  }
-
+  ///Invierte la luz, actualizando SharedPreferences y actualizando el widget
   void _switchLightMode() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {

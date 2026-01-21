@@ -4,6 +4,7 @@
     // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "scrcambio_app",
             "request": "launch",
@@ -13,13 +14,19 @@
             "name": "scrcambio_app (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "profile"
         },
         {
             "name": "scrcambio_app (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
+        },
+        {
+            "name": "scrcambio_app (debug mode)",
+            "type": "dart",
+            "request": "launch",
+            "flutterMode": "debug"
         }
     ]
 }

@@ -63,7 +63,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
         appBar: AppBar(
           title: Text("SCRCambio - Alpha"),
         ),
-        body: Column(
+        body: ListView(
           children: [
             SwitchListTile(
               title: Text("Modo Oscuro"),
