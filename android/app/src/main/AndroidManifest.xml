@@ -1,4 +1,8 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"> 
+<!-- Según el plugin de screen_Brightness, requiere las herramientas de arriba y los permisos de abajo
+ Aún así no se los pedirá al usuario-->
+<uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions"/>
     <application
         android:label="scrcambio_app"
         android:name="${applicationName}"

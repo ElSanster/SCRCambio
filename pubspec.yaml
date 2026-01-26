@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  screen_brightness: ^2.1.7
   shared_preferences: ^2.5.4
+  themed: ^8.1.0
+  wakelock_plus: ^1.4.0
 
 dev_dependencies:
   flutter_test:
