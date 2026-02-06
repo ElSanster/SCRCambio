@@ -30,7 +30,6 @@ class _MainAppState extends State<MainApp> {
   bool _keepAliveLight = DefaultValues.keepAliveLight;
   double _brightnessDark = DefaultValues.brightnessDarkAndroid;
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
-  double _brightness = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
 
   //Sobreescribir para cargar las opciones de configuración.
@@ -68,11 +67,11 @@ class _MainAppState extends State<MainApp> {
             DefaultValues.brightnessLightAndroid;
         Brightnessandroid.setBrightness(_darkMode ? _brightnessDark : _brightnessLight);
         if(_brightnessDark > 1 || _brightnessDark < 0){
-          log("_brghtdark en android supero el límite, reseteado a Default");
+          log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessDarkAndroid;
         }
         if(_brightnessLight > 1 || _brightnessLight < 0){
-          log("_brghtdark en android supero el límite, reseteado a Default");
+          log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessLightAndroid;
         }
       } else {

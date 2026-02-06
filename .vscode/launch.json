@@ -4,29 +4,47 @@
     // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        //Para Dispositivos no android (MacOs, iOS, web), sin configuraciones de firmado
         {
-            "name": "scrcambio_app",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "scrcambio_app (profile mode)",
+            "name": "scrcambio_app (sin flavor, debug)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "debug",
         },
         {
-            "name": "scrcambio_app (release mode)",
+            "name": "scrcambio_app (sin flavor, release)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+        },
+        //Dispositivos android, tienen configuraciones de firmado y cosas solo compatibles en android
+        {
+            "name": "scrcambio_app (release/production) con detalles en consola",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "args": ["--flavor","production","-v"]
         },
         {
-            "name": "scrcambio_app (debug mode)",
+            "name": "scrcambio_app (debug/staging) con detalles en consola",
             "type": "dart",
             "request": "launch",
-            "flutterMode": "debug"
-        }
+            "flutterMode": "debug",
+            "args": ["--flavor","staging","-v"]
+        },
+        {
+            "name": "scrcambio_app (release/production)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "args": ["--flavor","production"]
+        },
+        {
+            "name": "scrcambio_app (debug/staging)",
+            "type": "dart",
+            "request": "launch",
+            "flutterMode": "debug",
+            "args": ["--flavor","staging"]
+        },
     ]
 }
