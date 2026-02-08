@@ -1,0 +1,36 @@
+name: Build and Release
+
+on: 
+  push: 
+    branches: [ main ]
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+      - name: Flutter Setup
+        uses: subosito/flutter-action@v2
+        if: github.ref_type == 'tag'
+        with:
+          channel: stable
+          run: flutter --version
+      - name: build_release.sh para generar y renombrar builds
+        if: github.ref_type == 'tag'
+        run: .github\build_release.sh
+      - name: Release builds
+        uses: softprops/action-gh-release@v2.5.0
+        if: github.ref_type == 'tag'
+        with:
+          body_path: .github\release_body.md
+          prerelease: true
+          files: |
+            build/app/outputs/flutter-apk/Android-universal.apk
+            build/app/outputs/flutter-apk/Android-arm64-v8a.apk
+            build/app/outputs/flutter-apk/Android-x86-64.apk
+            build/app/outputs/flutter-apk/Android-armeabi-v7a.apk
+            build/windows/x64/runner/Release/Windows-x64.zip
+
+            
