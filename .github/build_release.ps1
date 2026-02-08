@@ -4,16 +4,16 @@ Write-Host "Obtener paquetes (flutter pub get)"
 flutter pub get
 
 Write-Host "Decodificando keystore para firmado usando base64"
-$keystoreBase64 = "${{ secrets.ANDROID_KEYSTORE }}"
+$keystoreBase64 = "$`{{ secrets.ANDROID_KEYSTORE }}"
 $keystoreBytes = [Convert]::FromBase64String($keystoreBase64)
 Set-Content -Path "android/upload-keystore.jks" -Value $keystoreBytes -Encoding Byte
 
 Write-Host "Creando key.properties para firmado"
 $keyPropertiesContent = @"
 storeFile=upload-keystore.jks
-storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-keyAlias=${{ secrets.KEY_ALIAS }}
-keyPassword=${{ secrets.KEY_PASSWORD }}
+storePassword=$`{{ secrets.KEYSTORE_PASSWORD }}
+keyAlias=$`{{ secrets.KEY_ALIAS }}
+keyPassword=$`{{ secrets.KEY_PASSWORD }}
 "@
 Set-Content -Path "android/key.properties" -Value $keyPropertiesContent
 
