@@ -19,7 +19,7 @@ jobs:
       - name: Check Flutter version
         run: flutter --version
       - name: build_release.sh para generar y renombrar builds
-        run: .github\build_release.sh
+        run: bash .github\build_release.sh
       - name: Release builds
         uses: softprops/action-gh-release@v2.5.0
         with:
