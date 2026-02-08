@@ -5,19 +5,16 @@ flutter pub get
 
 Write-Host "Decodificando keystore para firmado usando base64"
 $keystoreBytes = [Convert]::FromBase64String($env:ANDROID_KEYSTORE)
-Set-Content -Path "android/upload-keystore.jks" -Value $keystoreBytes -Encoding Byte
+Set-Content -Path "D:\a\SCRCambio\SCRCambio\android\upload-keystore.jks" -Value $keystoreBytes -Encoding Byte
 
 Write-Host "Creando key.properties para firmado"
 $keyPropertiesContent = @"
-storeFile=upload-keystore.jks
+storeFile=D:\\a\\SCRCambio\\SCRCambio\\android\\upload-keystore.jks
 storePassword=$env:KEYSTORE_PASSWORD
 keyAlias=$env:KEY_ALIAS
 keyPassword=$env:KEY_PASSWORD
 "@
-Set-Content -Path "android/key.properties" -Value $keyPropertiesContent
-
-Write-Host "Testear (flutter test)"
-flutter test
+Set-Content -Path "D:\\a\\SCRCambio\\SCRCambio\\android\\key.properties" -Value $keyPropertiesContent
 
 Write-Host "Generar apk universal (flutter build apk --flavor production)"
 flutter build apk --flavor production
