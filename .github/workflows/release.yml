@@ -7,21 +7,26 @@ on:
       -"v*.*.*"
 jobs: 
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
+
       - name: Flutter Setup
         uses: subosito/flutter-action@v2.21.0
         with:
           channel: stable
+
       - name: Check Flutter version
         run: flutter --version
-      - name: build_release.sh para generar y renombrar builds
-        run: bash ./.github/build_release.sh
+
+      - name: build_release.ps1 para generar y renombrar builds
+        run: powershell -File .\.github\build_release.ps1
+
       - name: Release builds
         uses: softprops/action-gh-release@v2.5.0
+
         with:
           body_path: .github\release_body.md
           prerelease: true
