@@ -22,13 +22,14 @@ jobs:
         run: flutter --version
 
       - name: build_release.ps1 para generar y renombrar builds
-        shell: bash
+        shell: pwsh
         env: 
           KEYSTORE_ANDROID: ${{ secrets.ANDROID_KEYSTORE}}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD}}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS}}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
         run: powershell -File .\.github\build_release.ps1
+        
       - name: Release builds
         uses: softprops/action-gh-release@v2.5.0
 
