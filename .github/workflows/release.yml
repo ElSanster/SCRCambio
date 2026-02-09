@@ -22,9 +22,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Check Flutter version
-        run: flutter --version
-
       - name: build_release.ps1 para generar y renombrar builds
         shell: pwsh
         env: 

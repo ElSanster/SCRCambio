@@ -1,7 +1,7 @@
 # Este es un script para generar los builds de los que soporta el tag actual
 
-Write-Host "Obtener paquetes (flutter pub get)"
-flutter pub get
+Write-Host "Obtener paquetes (flutter --version)"
+flutter --version
 
 Write-Host "Decodificando keystore para firmado usando base64"
 $keystoreBytes = [Convert]::FromBase64String($env:ANDROID_KEYSTORE)
