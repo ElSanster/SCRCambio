@@ -15,7 +15,7 @@ jobs:
         uses: subosito/flutter-action@v2.21.0
         with:
           channel: stable
-          
+
       - name: build_release.ps1 para generar y comprimir windows build
         shell: pwsh
         run: .\.github\release_windows.ps1
@@ -23,6 +23,7 @@ jobs:
       - name: Release windows build
         uses: softprops/action-gh-release@v2.5.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
           prerelease: true

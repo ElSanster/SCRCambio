@@ -30,9 +30,10 @@ jobs:
           RELEASE_KEYPASSWORD: ${{ secrets.KEY_PASSWORD }}
           RELEASE_KEYALIAS: ${{ secrets.KEY_ALIAS }}
         
-      - name: Release windows build
+      - name: Release andorid builds
         uses: softprops/action-gh-release@v2.5.0
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
           prerelease: true
