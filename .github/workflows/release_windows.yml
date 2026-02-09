@@ -1,14 +1,12 @@
 name: Build and Release Windows
-
-on: 
-  push: 
+on:
+  push:
     branches: [ main ]
-    tags: 
+    tags:
       -"v*.*.*"
-jobs: 
+jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    runs-on: windows-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
@@ -17,11 +15,11 @@ jobs:
         uses: subosito/flutter-action@v2.21.0
         with:
           channel: stable
-
+          
       - name: build_release.ps1 para generar y comprimir windows build
         shell: pwsh
-        run: powershell -File .\.github\release_windows.ps1
-        
+        run: .\.github\release_windows.ps1
+
       - name: Release windows build
         uses: softprops/action-gh-release@v2.5.0
         with:
@@ -29,5 +27,3 @@ jobs:
           body_path: .github\release_body.md
           prerelease: true
           files: build/windows/x64/runner/Release/Windows-x64.zip
-
-            
