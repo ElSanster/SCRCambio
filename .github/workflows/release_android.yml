@@ -1,0 +1,35 @@
+name: Build and Release Android
+on:
+  push:
+    branches: [ main ]
+    tags:
+      -"v*.*.*"
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+
+      - name: Flutter Setup
+        uses: subosito/flutter-action@v2.21.0
+        with:
+          channel: stable
+      - name: Decode Keystore
+        run: echo $ENCODED_STRING | base64 -di > release.jks
+        env:
+          ENCODED_STRING: ${{ secrets.ANDROID_KEYSTORE }}
+      - name: Build APKs
+        shell: bash
+        run: bash ./.github/build_release.sh
+        env:
+          RELEASE_STOREPASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          RELEASE_KEYPASSWORD: ${{ secrets.KEY_PASSWORD }}
+          RELEASE_KEYALIAS: ${{ secrets.KEY_ALIAS }}
+      - name: Release windows build
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
+          body_path: .github\release_body.md
+          prerelease: true
+          files: build/windows/x64/runner/Release/Windows-x64.zip
