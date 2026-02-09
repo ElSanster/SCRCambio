@@ -1,12 +1,14 @@
-name: Build and Release Android
-on:
-  push:
+name: Build and Release Windows
+
+on: 
+  push: 
     branches: [ main ]
-    tags:
+    tags: 
       -"v*.*.*"
-jobs:
+jobs: 
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
@@ -15,17 +17,11 @@ jobs:
         uses: subosito/flutter-action@v2.21.0
         with:
           channel: stable
-      - name: Decode Keystore
-        run: echo $ENCODED_STRING | base64 -di > release.jks
-        env:
-          ENCODED_STRING: ${{ secrets.ANDROID_KEYSTORE }}
-      - name: Build APKs
-        shell: bash
-        run: bash ./.github/release_android.sh
-        env:
-          RELEASE_STOREPASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          RELEASE_KEYPASSWORD: ${{ secrets.KEY_PASSWORD }}
-          RELEASE_KEYALIAS: ${{ secrets.KEY_ALIAS }}
+
+      - name: build_release.ps1 para generar y comprimir windows build
+        shell: pwsh
+        run: powershell -File .\.github\release_windows.ps1
+        
       - name: Release windows build
         uses: softprops/action-gh-release@v2.5.0
         with:
@@ -33,3 +29,5 @@ jobs:
           body_path: .github\release_body.md
           prerelease: true
           files: build/windows/x64/runner/Release/Windows-x64.zip
+
+            
