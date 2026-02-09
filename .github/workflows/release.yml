@@ -13,10 +13,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
 
-      - name: Obteniendo el último tag
-        id: tag
-        uses: 32teeth/action-github-tag@v1.0.7
-
       - name: Flutter Setup
         uses: subosito/flutter-action@v2.21.0
         with:
@@ -34,9 +30,7 @@ jobs:
       - name: Release builds
         uses: softprops/action-gh-release@v2.5.0
         with:
-          #Por alguna razón no quiere obtener el tag, a pesar de que el workflow ocurre cuando se hace un push etiquetado
-          #Pero vale, obtener el último tag entonces.
-          tag_name: ${{steps.tag.outputs.tag}}
+          tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
           prerelease: true
           files: |
