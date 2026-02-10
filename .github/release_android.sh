@@ -9,6 +9,7 @@ touch key.properties
 echo storePassword=$RELEASE_STOREPASSWORD >> key.properties
 echo keyPassword=$RELEASE_KEYPASSWORD >> key.properties
 echo keyAlias=$RELEASE_KEYALIAS >> key.properties
+echo storeFile=release.jks
 
 echo "----Generar apk universal (flutter build apk --flavor production)"
 flutter build apk --flavor production

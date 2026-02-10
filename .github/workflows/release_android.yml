@@ -37,6 +37,10 @@ jobs:
           tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
           prerelease: true
-          files: release/*
+          files: |
+            release/Android-armeabi-v7a.apk
+            release/Android-arm64-v8a.apk
+            release/Android-x86-64.apk
+            release/Android-universal.apk
 
             
