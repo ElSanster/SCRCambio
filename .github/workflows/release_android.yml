@@ -18,8 +18,9 @@ jobs:
         with:
           channel: stable
       
-      - name: Decode Keystore
-        run: echo $ENCODED_STRING | base64 -di > release.jks
+      - name: Decode Keystore and move it to android/app
+        run: |
+          echo $ENCODED_STRING | base64 -di > ./android/app/release.jks
         env:
           ENCODED_STRING: ${{ secrets.ANDROID_KEYSTORE }}
       - name: Build APKs
