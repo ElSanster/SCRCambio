@@ -18,6 +18,9 @@ flutter build apk --flavor production
 echo "----Generar apks por arquitectura (flutter build apk --split-per-abi --flavor production)"
 flutter build apk --split-per-abi --flavor production
 
+echo "----Crear directorio release si no existe"
+mkdir -p release
+
 echo "----Renombrar apks correspondientes a su arquitectura (con mv en build/app/outputs/flutter-apk/)"
 mv build/app/outputs/flutter-apk/app-armeabi-v7a-production-release.apk release/Android-armeabi-v7a.apk
 mv build/app/outputs/flutter-apk/app-arm64-v8a-production-release.apk release/Android-arm64-v8a.apk
