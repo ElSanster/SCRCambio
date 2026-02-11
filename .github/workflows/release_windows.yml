@@ -23,8 +23,8 @@ jobs:
       - name: Release windows build
         uses: softprops/action-gh-release@v2.5.0
         with:
+          make_latest: true
           token: ${{ secrets.RELEASE_TOKEN}}
           tag_name: v0.1.0 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
-          prerelease: true
           files: build/windows/x64/runner/Release/Windows-x64.zip
