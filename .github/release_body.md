@@ -1,15 +1,4 @@
-## [Unreleased] YYYY/MM/DD
+## [0.1.1] 2026/02/11
 
 ## Añadido
-
 - Botón de reiniciar todas las configuraciones
-
-## Cambiado
-
-## Deprecado
-
-## Removido
-
-## Arreglado
-
-## Seguridad
