@@ -1,4 +1,7 @@
-## [0.1.1] 2026/02/11
+## [0.1.2 Unreleased] YYYY/MM/DD
 
 ## Añadido
-- Botón de reiniciar todas las configuraciones
+
+## Cambiado
+
+- Vista de la configuración ajustada para usar colores más tenues y textos del mismo tamaño.

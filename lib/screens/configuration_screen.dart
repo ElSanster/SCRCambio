@@ -2,8 +2,8 @@ import 'dart:developer' as developer;
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scrcambio_app/core/adaptative_colors.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
-import 'package:scrcambio_app/core/text_styles.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:themed/themed.dart';
@@ -33,7 +33,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     super.initState();
   }
 
-  ///Cargar datos en SharedPreferences
+  ///Cargar datos almacenados en SharedPreferences
   void _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -52,6 +52,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
         Brightnessandroid.setBrightness(
           _darkmode ? _brightnessDark : _brightnessLight,
         );
+
+        //Prevenir datos por fuera de los permitidos para brillo
         if (_brightnessDark > 1 || _brightnessDark < 0) {
           developer.log(
             "_brghtdark en android supero el límite, reseteado a Default",
@@ -209,8 +211,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     _loadSettings();
   }
 
+ ///Cuando lleguemos a implementar algo que requiera de esto, usarlo, me da toc dejarlo por ahí sin hacer nada
+
   ///Borra una lista de llaves especificadas y recarga los ajustes para regenerar los datos eliminados.
-  void _resetVariousSettings(List<String> keys) async {
+  /*void _resetVariousSettings(List<String> keys) async {
     final prefs = await SharedPreferences.getInstance();
     developer.log("Eliminando serie de llaves...");
     for (String key in keys) {
@@ -220,6 +224,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     developer.log("Eliminado de serie de llaves finalizada, recargando.");
     _loadSettings();
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -238,110 +243,109 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             },
             child: Focus(
               autofocus: true,
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Card(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.addOpacity(0.5),
-                          child: SwitchListTile(
-                            title: Text("Modo Oscuro"),
-                            value: _darkmode,
-                            onChanged: (newDarkMode) {
-                              setState(() {
-                                _darkmode = newDarkMode;
-                                _saveSetting(SettingKeys.darkMode, newDarkMode);
-                              });
-                            },
-                          ),
-                        ),
-                        Card(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.addOpacity(0.5),
-                          child: SwitchListTile(
-                            title: Text("Titulo Cambio"),
-                            value: _homeText,
-                            onChanged: (newHomeText) {
-                              setState(() {
-                                _homeText = newHomeText;
-                                _saveSetting(SettingKeys.homeText, newHomeText);
-                              });
-                            },
-                          ),
-                        ),
-                        Card(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.addOpacity(0.5),
-                          child: SwitchListTile(
-                            title: Text(
-                              "Mantener pantalla encendida en Modo Oscuro",
+              child: CardTheme(
+                color: AdaptativeColors.backgroundColor(_darkmode),
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Card(
+                            child: SwitchListTile(
+                              title: AdaptativeColors.textBody(
+                                "Modo Oscuro",
+                                _darkmode,
+                              ),
+                              value: _darkmode,
+                              onChanged: (newDarkMode) {
+                                setState(() {
+                                  _darkmode = newDarkMode;
+                                  _saveSetting(
+                                    SettingKeys.darkMode,
+                                    newDarkMode,
+                                  );
+                                });
+                              },
                             ),
-                            value: _keepAwakeDark,
-                            onChanged: (newkeepAliveDark) {
-                              setState(() {
-                                _keepAwakeDark = newkeepAliveDark;
-                                _saveSetting(
-                                  SettingKeys.keepAwakeDark,
-                                  newkeepAliveDark,
-                                );
-                              });
-                            },
                           ),
-                        ),
-
-                        Card(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.addOpacity(0.5),
-                          child: SwitchListTile(
-                            title: Text(
-                              "Mantener pantalla encendida en Modo Claro",
+                          Card(
+                            child: SwitchListTile(
+                              title: AdaptativeColors.textBody(
+                                "Titulo Cambio",
+                                _darkmode,
+                              ),
+                              value: _homeText,
+                              onChanged: (newHomeText) {
+                                setState(() {
+                                  _homeText = newHomeText;
+                                  _saveSetting(
+                                    SettingKeys.homeText,
+                                    newHomeText,
+                                  );
+                                });
+                              },
                             ),
-                            value: _keepAliveLight,
-                            onChanged: (newkeepAliveLight) {
-                              setState(() {
-                                _keepAliveLight = newkeepAliveLight;
-                                _saveSetting(
-                                  SettingKeys.keepAwakeLight,
-                                  newkeepAliveLight,
-                                );
-                              });
-                            },
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                          Card(
+                            child: SwitchListTile(
+                              title: AdaptativeColors.textBody(
+                                "Mantener pantalla encendida en Modo Oscuro",
+                                _darkmode,
+                              ),
+                              value: _keepAwakeDark,
+                              onChanged: (newkeepAliveDark) {
+                                setState(() {
+                                  _keepAwakeDark = newkeepAliveDark;
+                                  _saveSetting(
+                                    SettingKeys.keepAwakeDark,
+                                    newkeepAliveDark,
+                                  );
+                                });
+                              },
+                            ),
+                          ),
 
-                  //Slider para modificar el brillo en modo claro
-                  sliderBrightnessWhite(context),
-                  //Slider para modificar el brillo en modo oscuro
-                  sliderBrightnessDark(context),
-
-                  Row(
-                    children: [
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: () {
-                          _callConfirmResetDialog(context);
-                        },
-                        child: Text(
-                          "Reiniciar toda la configuración",
-                          style: _darkmode
-                              ? TextstylesDark.bodyText
-                              : TextstylesLight.bodyText,
-                        ),
+                          Card(
+                            child: SwitchListTile(
+                              title: AdaptativeColors.textBody(
+                                "Mantener pantalla encendida en Modo Claro",
+                                _darkmode,
+                              ),
+                              value: _keepAliveLight,
+                              onChanged: (newkeepAliveLight) {
+                                setState(() {
+                                  _keepAliveLight = newkeepAliveLight;
+                                  _saveSetting(
+                                    SettingKeys.keepAwakeLight,
+                                    newkeepAliveLight,
+                                  );
+                                });
+                              },
+                            ),
+                          ),
+                          //Slider para modificar el brillo en modo claro
+                          sliderBrightnessWhite(context),
+                          //Slider para modificar el brillo en modo oscuro
+                          sliderBrightnessDark(context),
+                          Row(
+                            children: [
+                              Spacer(),
+                              AdaptativeColors.elevatedButton(
+                                "Reiniciar toda la configuración",
+                                context,
+                                _darkmode,
+                                () {
+                                  _callConfirmResetDialog(context, _darkmode);
+                                },
+                              ),
+                              Spacer(),
+                            ],
+                          ),
+                        ],
                       ),
-                      Spacer()
-                    ],
-                  ),
-                ],
+                    ),
+                  ],),
               ),
             ),
           ),
@@ -350,220 +354,208 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Padding sliderBrightnessDark(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        color: Theme.of(context).colorScheme.primary.addOpacity(0.5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 17.0,
-                top: 10,
-                right: 8,
-                bottom: 10,
-              ),
-              child: Text(
-                "$_brightText en modo oscuro:",
-                style: _darkmode
-                    ? TextstylesDark.bodyText
-                    : TextstylesLight.bodyText,
-              ),
+  Card sliderBrightnessDark(BuildContext context) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 17.0,
+              top: 10,
+              right: 8,
+              bottom: 10,
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: _brightnessLight >= 0
-                        ? _brightnessDark
-                        : _brightnessDark * -1,
-                    onChangeEnd: (newBrightnesDark) {
-                      setState(() {
-                        _brightnessDark = newBrightnesDark;
-                        if (Platform.isAndroid) {
-                          Brightnessandroid.setBrightness(_brightnessDark);
-                          _saveSetting(
-                            SettingKeys.brightnessDarkAndroid,
-                            _brightnessDark,
-                          );
-                        } else {
-                          _opacity = newBrightnesDark * -1;
-                          _saveSetting(
-                            SettingKeys.brightnessDarkOther,
-                            _opacity,
-                          );
-                        }
-                      });
-                    },
-                    onChangeStart: (newBrightnesDark) {
+            child: AdaptativeColors.textBody(
+              "$_brightText en modo oscuro:",
+              _darkmode,
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: _brightnessLight >= 0
+                      ? _brightnessDark
+                      : _brightnessDark * -1,
+                  onChangeEnd: (newBrightnesDark) {
+                    setState(() {
                       _brightnessDark = newBrightnesDark;
-                      if (_darkmode == false) {
-                        setState(() {
-                          _darkmode = true;
-                          _saveSetting(SettingKeys.darkMode, true);
-                        });
-                      }
-                    },
-                    onChanged: (newBrightnesDark) {
-                      setState(() {
-                        _brightnessDark = newBrightnesDark;
-                      });
-                    },
-                    min: 0,
-                    max: 1,
-                    divisions: 100,
-                    label: (_brightnessDark * 100).toStringAsFixed(0),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () {
                       if (Platform.isAndroid) {
-                        _brightnessDark = DefaultValues.brightnessDarkAndroid;
-                        _resetSetting(SettingKeys.brightnessDarkAndroid);
+                        Brightnessandroid.setBrightness(_brightnessDark);
+                        _saveSetting(
+                          SettingKeys.brightnessDarkAndroid,
+                          _brightnessDark,
+                        );
                       } else {
-                        _brightnessDark = DefaultValues.brightnessDarkOther;
-                        _resetSetting(SettingKeys.brightnessDarkOther);
+                        _opacity = newBrightnesDark * -1;
+                        _saveSetting(SettingKeys.brightnessDarkOther, _opacity);
                       }
-                    },
-                    child: Text(
-                      "Reiniciar",
-                      style: _darkmode
-                          ? TextstylesDark.bodyText
-                          : TextstylesLight.bodyText,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Padding sliderBrightnessWhite(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        color: Theme.of(context).colorScheme.primary.addOpacity(0.5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 17.0,
-                top: 10,
-                right: 8,
-                bottom: 10,
-              ),
-              child: Text(
-                "$_brightText en modo Claro:",
-                style: _darkmode
-                    ? TextstylesDark.bodyText
-                    : TextstylesLight.bodyText,
-              ),
-            ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Slider(
-                    //Evitar que el valor del slider sea distinto a los valores minimos
-                    value: _brightnessLight >= 0
-                        ? _brightnessLight
-                        : _brightnessLight * -1,
-                    onChangeEnd: (newBrightnesLight) {
+                    });
+                  },
+                  onChangeStart: (newBrightnesDark) {
+                    _brightnessDark = newBrightnesDark;
+                    if (_darkmode == false) {
                       setState(() {
-                        _brightnessLight = newBrightnesLight;
-                        if (Platform.isAndroid) {
-                          Brightnessandroid.setBrightness(_brightnessLight);
-                          _saveSetting(
-                            SettingKeys.brightnessLightAndroid,
-                            _brightnessLight,
-                          );
-                        } else {
-                          _opacity = newBrightnesLight * -1;
-                          _saveSetting(
-                            SettingKeys.brightnessLightOther,
-                            _opacity,
-                          );
-                        }
+                        _darkmode = true;
+                        _saveSetting(SettingKeys.darkMode, true);
                       });
-                    },
-                    onChangeStart: (newBrightnesLight) {
-                      _brightnessLight = newBrightnesLight;
-                      if (_darkmode == true) {
-                        setState(() {
-                          _darkmode = false;
-                          _saveSetting(SettingKeys.darkMode, false);
-                        });
-                      }
-                    },
-                    onChanged: (newBrightnesLight) {
-                      setState(() {
-                        _brightnessLight = newBrightnesLight;
-                      });
-                    },
-                    min: 0,
-                    max: 1,
-                    divisions: 100,
-                    label: (_brightnessLight * 100).toStringAsFixed(0),
-                  ),
+                    }
+                  },
+                  onChanged: (newBrightnesDark) {
+                    setState(() {
+                      _brightnessDark = newBrightnesDark;
+                    });
+                  },
+                  min: 0,
+                  max: 1,
+                  divisions: 100,
+                  label: (_brightnessDark * 100).toStringAsFixed(0),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (Platform.isAndroid) {
-                        _brightnessLight = DefaultValues.brightnessLightAndroid;
-                        _resetSetting(SettingKeys.brightnessLightAndroid);
-                      } else {
-                        _brightnessLight = DefaultValues.brightnessLightOther;
-                        _resetSetting(SettingKeys.brightnessLightOther);
-                      }
-                    },
-                    child: Text(
-                      "Reiniciar",
-                      style: _darkmode
-                          ? TextstylesDark.bodyText
-                          : TextstylesLight.bodyText,
-                    ),
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AdaptativeColors.elevatedButton(
+                  "Reiniciar",
+                  context,
+                  _darkmode,
+                  () {
+                    if (Platform.isAndroid) {
+                      _brightnessDark = DefaultValues.brightnessDarkAndroid;
+                      _resetSetting(SettingKeys.brightnessDarkAndroid);
+                    } else {
+                      _brightnessDark = DefaultValues.brightnessDarkOther;
+                      _resetSetting(SettingKeys.brightnessDarkOther);
+                    }
+                  },
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _callConfirmResetDialog (BuildContext contexto ) {
-    developer.log("Resetear datos llamado");
-    showDialog(context: contexto,
-     builder: (BuildContext ctx){
-      return AlertDialog(
-        title: Text("Reiniciar Configuración"),
-        content: Text("¿Está seguro de reiniciar la configuración a estado de fábrica?"),
-        actions: [
-          TextButton(onPressed: () {
-            developer.log("Resetear datos Aceptado");
-            _resetAllSettings();
-            Navigator.of(context).pop();
-          }, child: Text("Confirmar")),
-          ElevatedButton(child: Text("Cancelar"), onPressed: () {
-            developer.log("Resetear datos Denegado");
-            Navigator.of(context).pop();
-          },
-          )
+              ),
+            ],
+          ),
         ],
-      );
-    }
+      ),
+    );
+  }
+
+  Card sliderBrightnessWhite(BuildContext context) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 17.0,
+              top: 10,
+              right: 8,
+              bottom: 10,
+            ),
+            child: AdaptativeColors.textBody(
+              "$_brightText en modo Claro:",
+              _darkmode,
+            ),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Slider(
+                  //Evitar que el valor del slider sea distinto a los valores minimos
+                  value: _brightnessLight >= 0
+                      ? _brightnessLight
+                      : _brightnessLight * -1,
+                  onChangeEnd: (newBrightnesLight) {
+                    setState(() {
+                      _brightnessLight = newBrightnesLight;
+                      if (Platform.isAndroid) {
+                        Brightnessandroid.setBrightness(_brightnessLight);
+                        _saveSetting(
+                          SettingKeys.brightnessLightAndroid,
+                          _brightnessLight,
+                        );
+                      } else {
+                        _opacity = newBrightnesLight * -1;
+                        _saveSetting(
+                          SettingKeys.brightnessLightOther,
+                          _opacity,
+                        );
+                      }
+                    });
+                  },
+                  onChangeStart: (newBrightnesLight) {
+                    _brightnessLight = newBrightnesLight;
+                    if (_darkmode == true) {
+                      setState(() {
+                        _darkmode = false;
+                        _saveSetting(SettingKeys.darkMode, false);
+                      });
+                    }
+                  },
+                  onChanged: (newBrightnesLight) {
+                    setState(() {
+                      _brightnessLight = newBrightnesLight;
+                    });
+                  },
+                  min: 0,
+                  max: 1,
+                  divisions: 100,
+                  label: (_brightnessLight * 100).toStringAsFixed(0),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AdaptativeColors.elevatedButton(
+                  "Reiniciar",
+                  context,
+                  _darkmode,
+                  () {
+                    if (Platform.isAndroid) {
+                      _brightnessLight = DefaultValues.brightnessLightAndroid;
+                      _resetSetting(SettingKeys.brightnessLightAndroid);
+                    } else {
+                      _brightnessLight = DefaultValues.brightnessLightOther;
+                      _resetSetting(SettingKeys.brightnessLightOther);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _callConfirmResetDialog(BuildContext contexto, bool darkMode) {
+    developer.log("Resetear datos llamado");
+    showDialog(
+      context: contexto,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          backgroundColor: AdaptativeColors.backgroundColor(darkMode),
+          title: AdaptativeColors.textTitle("Reiniciar Configuración",darkMode),
+          content: AdaptativeColors.textBody(
+            "¿Está seguro de reiniciar la configuración a estado de fábrica?",darkMode
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                developer.log("Resetear datos Aceptado");
+                _resetAllSettings();
+                Navigator.of(context).pop();
+              },
+              child: AdaptativeColors.textBody("Confirmar",darkMode),
+            ),
+            AdaptativeColors.elevatedButton(
+              "Cancelar", contexto, darkMode,
+              () {
+                developer.log("Resetear datos Denegado");
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -25,6 +25,6 @@ jobs:
         with:
           make_latest: true
           token: ${{ secrets.RELEASE_TOKEN}}
-          tag_name: v0.1.1 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
+          tag_name: v0.1.2 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
           body_path: .github\release_body.md
           files: build/windows/x64/runner/Release/Windows-x64.zip

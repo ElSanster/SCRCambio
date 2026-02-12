@@ -1,11 +1,11 @@
 import 'dart:developer'; //Para logear "log()" variables ya que no las muestra en el visual
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:scrcambio_app/core/adaptative_colors.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
 import 'package:themed/themed.dart';
 import 'package:flutter/material.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
-import 'package:scrcambio_app/core/text_styles.dart';
 import 'package:scrcambio_app/screens/configuration_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -199,11 +199,8 @@ class _MainAppState extends State<MainApp> {
                       alignment: Alignment.center,
                       child: Center(
                         //Texto que cambia dependiendo del modo de luz de la app
-                        child: Text(
-                          _text,
-                          style: _darkMode
-                              ? TextstylesDark.title
-                              : TextstylesLight.title,
+                        child: AdaptativeColors.textHomeTitle(
+                          _text, _darkMode
                         ),
                       ),
                     ),
