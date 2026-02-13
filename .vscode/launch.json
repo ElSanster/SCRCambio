@@ -4,47 +4,83 @@
     // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        //Para Dispositivos no android (MacOs, iOS, web), sin configuraciones de firmado
+
         {
-            "name": "scrcambio_app (sin flavor, debug)",
+            ///Lanza la aplicación en modo debug sin flavor (para dispositivos no-android) permitiendo:
+            // hotreloading, devtools, ejecución de la app en emulador, 
+            // Assertions (protección contra excepciones), con un coste de rendimiento en la app
+            "name": "scrcambio_app no android (sin flavor, debug)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
         },
         {
-            "name": "scrcambio_app (sin flavor, release)",
+            ///Lanza la aplicación en modo release sin flavor (para dispositivos no-android):
+            ///Todas las opciones del modo debug están deshabilitadas, compliacion optimizada para un
+            ///Rendimiento mejorado y real, pero sin poder medir el rendimiento como tal, y los crasheos
+            // cierran la app en lugar de solo detenerla.
+            "name": "scrcambio_app no android(sin flavor, release)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
         },
-        //Dispositivos android, tienen configuraciones de firmado y cosas solo compatibles en android
         {
-            "name": "scrcambio_app (release/production) con detalles en consola",
+            ///Lanza la aplicacion en modo profile sin flavor (para dispositivos no-android):
+            ///Las opciones de rendimiento como devtools funcionan parcialmente
+            ///Compilación optimizada para un rendimiento bastante cercano al real.
+            "name": "scrcambio_app no android(sin flavor, profile)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release",
-            "args": ["--flavor","production","-v"]
+            "flutterMode": "profile",
         },
+        
+        //Dispositivos android, tienen configuraciones de firmado y
+        //cosas solo compatibles en android, Al intentar crear una
+        //build para otros sistemas operativos que no sean Android macOS
+        // y iOS, dará un aviso de posibles incompatibilidades. 
+        // y probablemente crashee en sistemas apple dado que no hay
+        // procedimientos para el compilado en estos.
+
         {
-            "name": "scrcambio_app (debug/staging) con detalles en consola",
-            "type": "dart",
-            "request": "launch",
-            "flutterMode": "debug",
-            "args": ["--flavor","staging","-v"]
-        },
-        {
-            "name": "scrcambio_app (release/production)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release",
-            "args": ["--flavor","production"]
-        },
-        {
-            "name": "scrcambio_app (debug/staging)",
+            ///Lanza la aplicación en modo debug con staging (para dispositivos android):
+            /// Aparte de lo que ofrece debug, la aplicación está sin firmar por lo que las builds en staging
+            //  probablemente no instalen,
+            /// icono y nombre del paquete están adecuados para mostrar staging:
+            /// com.elsanster.scrcambio.staging y android/app/src/staging/res/mipmap-xxxhdpi/ic_launcher.png
+            "name": "scrcambio_app android (debug-staging)",
             "type": "dart",
             "request": "launch",
             "flutterMode": "debug",
             "args": ["--flavor","staging"]
+        },
+        {
+            ///Lanza la aplicacion en modo profile con staging (para dispositivos android):
+            ///Misma función que el modo profile, sin firmado y con distintivos staging
+            ///No usaría esta opción dado que el modo profile está diseñado para ver el
+            ///rendimiento de la app lo más parecido al real.
+            "name": "scrcambio_app android (profile-staging)",
+            "type": "dart",
+            "request": "launch",
+            "flutterMode": "profile",
+            "args": ["--flavor","staging"]
+        },
+        {
+            ///Lanza la aplicacion en modo profile con production (para dispositivos android):
+            ///Misma función que el modo profile, con firmado y identificadores y logotipo normales.
+            "name": "scrcambio_app android (profile-production)",
+            "type": "dart",
+            "request": "launch",
+            "flutterMode": "profile",
+            "args": ["--flavor","staging"]
+        },
+        {
+            ///Lanza la aplicación en modo release con production (para dispositivos android):
+            ///Misma función que el modo release, con firmado, identificadores y logotipo normales.
+            "name": "scrcambio_app android (release-production)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "args": ["--flavor","production"]
         },
     ]
 }

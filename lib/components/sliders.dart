@@ -1,1 +1,3 @@
-class Sliders {}
+class Sliders {
+  
+}

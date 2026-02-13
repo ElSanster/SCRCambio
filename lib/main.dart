@@ -23,6 +23,8 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   //Para los gestos
   bool _isDoubleTapping = false;
+
+  //Inicializar variables
   bool _darkMode = DefaultValues.darkMode;
   bool _textEnabled = DefaultValues.homeText;
   String _text = "Cambio";
@@ -31,6 +33,7 @@ class _MainAppState extends State<MainApp> {
   double _brightnessDark = DefaultValues.brightnessDarkAndroid;
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
+  bool _firstOpen = DefaultValues.firstOpen;
 
   //Sobreescribir para cargar las opciones de configuración.
   @override
@@ -119,6 +122,11 @@ class _MainAppState extends State<MainApp> {
           prefs.getBool(SettingKeys.keepAwakeLight) ??
           DefaultValues.keepAliveLight;
       log("_keepAliveLight: $_keepAliveLight");
+
+      //Verificar primer inicio de aplicación
+      _firstOpen = prefs.getBool(SettingKeys.firstOpen) ??
+          DefaultValues.firstOpen;
+      log("_firstOpen: $_firstOpen");
     });
   }
 

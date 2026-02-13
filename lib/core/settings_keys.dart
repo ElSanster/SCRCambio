@@ -39,6 +39,9 @@ class SettingKeys {
   ///Llave para obtener la opción de mantener la pantalla encendida modo claro
   ///<br />Tipo Bool
   static const String keepAwakeLight = "keepAliveLight";
+  ///Llave para verificar si es la primera vez que el usuario abre la app
+  ///<br />Tipo Bool
+  static const String firstOpen = "firstOpen";
 }
 
 ///Valores por defecto en caso de no haber datos en SharedPreferences
@@ -69,4 +72,7 @@ class DefaultValues {
 
   ///Mantener la pantalla encendida en modo claro por defecto
   static const bool keepAliveLight = true;
+  
+  ///Usuario abre la aplicación por primera vez
+  static const bool firstOpen = true;
 }

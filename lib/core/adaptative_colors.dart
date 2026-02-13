@@ -5,7 +5,7 @@ class AdaptativeColors {
   /// Devuelve un color para fondos de tarjeta que interpola entre el
   /// color base de la tarjeta y el color primario del tema.
   /// [amount] controla cuánto acercarse al color primario (0..1). Default 0.2 (20%).
-  static Color backgroundColor(bool darkMode, [double amount = 0.2]) {
+  static Color backgroundColor(bool darkMode, [double amount = 0.1]) {
     ThemeData theme = darkMode ? ThemeData.dark() : ThemeData.light();
     final base = theme.cardColor;
     final primary = theme.colorScheme.primary;
@@ -36,13 +36,25 @@ class AdaptativeColors {
 ///Genera un Text que usa el body text de text_styles
 ///[text] Texto a usar
 ///[darkMode] De este depende el modo de luz del texto
-  static Text textBody (String text, bool darkMode){
-    return Text(
-      text,
-      style: darkMode ?TextstylesDark.bodyText : TextstylesLight.bodyText
-      ,
-      );
-  }
+static Text textBody (String text, bool darkMode){
+  return Text(
+    text,
+    style: darkMode ?TextstylesDark.bodyText : TextstylesLight.bodyText
+    ,
+    );
+}
+
+///Genera un Text que usa el subtitle text de text_styles
+///[text] Texto a usar
+///[darkMode] De este depende el modo de luz del texto
+static Text subtitle (String text, bool darkMode){
+  return Text(
+    text,
+    style: darkMode ?TextstylesDark.subtitle : TextstylesLight.subtitle
+    ,
+    );
+}
+
 
 
 ///Genera un Text que usa el title de text_styles
