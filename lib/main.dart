@@ -34,6 +34,7 @@ class _MainAppState extends State<MainApp> {
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
   bool _firstOpen = DefaultValues.firstOpen;
+  bool _firstOpenDialogShown = false;
 
   //Sobreescribir para cargar las opciones de configuración.
   @override
@@ -41,6 +42,7 @@ class _MainAppState extends State<MainApp> {
     _loadPrefs();
     log("initState disparado");
     super.initState();
+    log("initState finalizado");
   }
 
   ///Enviar usuario a la configuración, cuando vuelva a la pantalla principal, llamar _loadPrefs()
@@ -55,25 +57,27 @@ class _MainAppState extends State<MainApp> {
   }
 
   ///Cargar las variables necesarias de SharedPreferences y actualizar widget. asíncrono
-  void _loadPrefs() async {
+  Future _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       //Establecer brillo dependiendo del SO
       if (Platform.isAndroid) {
         //Debería dejar los valores en números positivos entre 0 y 1
-        _opacity = 0;//Sin cambios
+        _opacity = 0; //Sin cambios
         _brightnessDark =
             prefs.getDouble(SettingKeys.brightnessDarkAndroid) ??
             DefaultValues.brightnessDarkAndroid;
         _brightnessLight =
             prefs.getDouble(SettingKeys.brightnessLightAndroid) ??
             DefaultValues.brightnessLightAndroid;
-        Brightnessandroid.setBrightness(_darkMode ? _brightnessDark : _brightnessLight);
-        if(_brightnessDark > 1 || _brightnessDark < 0){
+        Brightnessandroid.setBrightness(
+          _darkMode ? _brightnessDark : _brightnessLight,
+        );
+        if (_brightnessDark > 1 || _brightnessDark < 0) {
           log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessDarkAndroid;
         }
-        if(_brightnessLight > 1 || _brightnessLight < 0){
+        if (_brightnessLight > 1 || _brightnessLight < 0) {
           log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessLightAndroid;
         }
@@ -91,11 +95,11 @@ class _MainAppState extends State<MainApp> {
             prefs.getDouble(SettingKeys.brightnessLightOther) ??
             DefaultValues.brightnessLightOther;
 
-        if(_brightnessLight > 0 || _brightnessLight < -1 ){
+        if (_brightnessLight > 0 || _brightnessLight < -1) {
           log("_brghtLight noAndroid supero el límite, reseteado a Default");
           _brightnessLight = DefaultValues.brightnessLightOther;
         }
-        if(_brightnessDark > 0 || _brightnessDark < -1){
+        if (_brightnessDark > 0 || _brightnessDark < -1) {
           log("_brghtdark noAndroid supero el límite, reseteado a Default");
           _brightnessDark = DefaultValues.brightnessDarkOther;
         }
@@ -124,8 +128,8 @@ class _MainAppState extends State<MainApp> {
       log("_keepAliveLight: $_keepAliveLight");
 
       //Verificar primer inicio de aplicación
-      _firstOpen = prefs.getBool(SettingKeys.firstOpen) ??
-          DefaultValues.firstOpen;
+      _firstOpen =
+          prefs.getBool(SettingKeys.firstOpen) ?? DefaultValues.firstOpen;
       log("_firstOpen: $_firstOpen");
     });
   }
@@ -138,10 +142,12 @@ class _MainAppState extends State<MainApp> {
       prefs.setBool(SettingKeys.darkMode, _darkMode);
       //Dependiendo del modo oscuro poner el brillo correspondiente
       if (Platform.isAndroid) {
-       log("Switch de brillo usando setBrightness (android)");
-       Brightnessandroid.setBrightness(_darkMode ? _brightnessDark : _brightnessLight);
+        log("Switch de brillo usando setBrightness (android)");
+        Brightnessandroid.setBrightness(
+          _darkMode ? _brightnessDark : _brightnessLight,
+        );
       } else {
-       log("Switch de brillo usando themed (otros OS)");
+        log("Switch de brillo usando themed (otros OS)");
         _opacity = _darkMode ? _brightnessDark : _brightnessLight;
       }
     });
@@ -159,11 +165,21 @@ class _MainAppState extends State<MainApp> {
       home: Builder(
         builder: (BuildContext scaffoldContext) {
           //Este builder nos da el contexto del materialapp para poder navegar a gusto a la config
+          // Mostrar el diálogo de bienvenida si es el primer inicio (solo una vez por sesión)
+          if (_firstOpen && !_firstOpenDialogShown) {
+            _firstOpenDialogShown = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              firstOpenDialog(scaffoldContext);
+            });
+          }
           return GestureDetector(
             //Al mantener click
             onLongPress: () {
               log("INFO: Botón mantenido presionado");
               _switchLightMode();
+              if (_firstOpen) {
+                settingsOpenDialog(scaffoldContext);
+              }
             },
             //Al tocar dos veces
             onDoubleTapDown: (TapDownDetails details) {
@@ -192,14 +208,17 @@ class _MainAppState extends State<MainApp> {
               child: Scaffold(
                 body: CallbackShortcuts(
                   bindings: {
-                    SingleActivator(LogicalKeyboardKey.escape):(){
+                    SingleActivator(LogicalKeyboardKey.escape): () {
                       log("Botón Ir a menú Presionado.");
                       _navigateToConfiguration(scaffoldContext);
                     },
-                    SingleActivator(LogicalKeyboardKey.space):(){
+                    SingleActivator(LogicalKeyboardKey.space): () {
                       log("Botón switch presionado");
                       _switchLightMode();
-                    }
+                      if (_firstOpen) {
+                        settingsOpenDialog(scaffoldContext);
+                      }
+                    },
                   },
                   child: Focus(
                     autofocus: true,
@@ -207,9 +226,7 @@ class _MainAppState extends State<MainApp> {
                       alignment: Alignment.center,
                       child: Center(
                         //Texto que cambia dependiendo del modo de luz de la app
-                        child: AdaptativeColors.textHomeTitle(
-                          _text, _darkMode
-                        ),
+                        child: AdaptativeColors.textHomeTitle(_text, _darkMode),
                       ),
                     ),
                   ),
@@ -219,6 +236,77 @@ class _MainAppState extends State<MainApp> {
           );
         },
       ),
+    );
+  }
+
+  void firstOpenDialog(BuildContext scaffoldContext) {
+    //Llamar respectiva tarjeta de bienvenida
+    if (_firstOpen) {
+      showDialog(
+        context: scaffoldContext,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            backgroundColor: AdaptativeColors.backgroundColor(_darkMode),
+            title: AdaptativeColors.textTitle(
+              "SCR Cambio - Bienvenida",
+              _darkMode,
+            ),
+            content: AdaptativeColors.textBody(
+              DefaultValues.welcomeMessage,
+              _darkMode,
+            ),
+            actions: [
+              AdaptativeColors.elevatedButton(
+                "Aceptar",
+                scaffoldContext,
+                _darkMode,
+                () {
+                  log("Bienvenida Aceptada :)");
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void settingsOpenDialog(BuildContext scaffoldContext) async {
+    //Llamar respectiva tarjeta de bienvenida
+    log("Primer inicio detectado para cuadro de info de config");
+    final prefs = await SharedPreferences.getInstance();
+    showDialog(
+      context: scaffoldContext,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          backgroundColor: AdaptativeColors.backgroundColor(_darkMode),
+          title: AdaptativeColors.textTitle(
+            "SCR Cambio - Bienvenida",
+            _darkMode,
+          ),
+          content: AdaptativeColors.textBody(
+            DefaultValues.settingsMessage,
+            _darkMode,
+          ),
+          actions: [
+            AdaptativeColors.elevatedButton(
+              "Aceptar",
+              scaffoldContext,
+              _darkMode,
+              () {
+                log("Bienvenida  config Aceptada, seteando _firstOpen :)");
+                // Marcar que ya se mostró el diálogo de bienvenida
+                setState(() {
+                  _firstOpen = false;
+                });
+                prefs.setBool(SettingKeys.firstOpen, false);
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

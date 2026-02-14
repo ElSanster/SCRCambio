@@ -199,6 +199,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   void _resetAllSettings() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.clear();
+    //Obviamente no queremos un mensaje de bienvenida al reiniciar datos.
+    //Y al llegados a este punto ya debería haberse mostrado los diálogos.
+    prefs.setBool(SettingKeys.firstOpen, false);  
     developer.log("Datos Eliminados Exitosamente, recargando.");
     _loadSettings();
   }
@@ -294,6 +297,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                             child: Column(
                               children: [
                                 ListTile(title: AdaptativeColors.subtitle("Modo Claro", _darkmode),),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0, right: 8),
+                                  child: Divider(),
+                                ),
                                 SwitchListTile(
                                   title: AdaptativeColors.textBody(
                                     "Mantener pantalla encendida",
@@ -310,6 +317,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                                     });
                                   },
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0, right: 8),
+                                  child: Divider(),
+                                ),
                                 //Slider para modificar el brillo en modo claro
                                 sliderBrightnessWhite(context),
                               ],
@@ -319,6 +330,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                             child: Column(
                               children: [
                                 ListTile(title: AdaptativeColors.subtitle("Modo Oscuro", _darkmode),),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0, right: 8),
+                                  child: Divider(),
+                                ),
                                 SwitchListTile(
                                   title: AdaptativeColors.textBody(
                                     "Mantener pantalla encendida",
@@ -334,6 +349,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                                       );
                                     });
                                   },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0, right: 8),
+                                  child: Divider(),
                                 ),
                                 //Slider para modificar el brillo en modo oscuro
                                 sliderBrightnessDark(context),
@@ -545,18 +564,24 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             darkMode,
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                developer.log("Resetear datos Aceptado");
-                _resetAllSettings();
-                Navigator.of(context).pop();
-              },
-              child: AdaptativeColors.textBody("Confirmar", darkMode),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextButton(
+                onPressed: () {
+                  developer.log("Resetear datos Aceptado");
+                  _resetAllSettings();
+                  Navigator.of(context).pop();
+                },
+                child: AdaptativeColors.textBody("Confirmar", darkMode),
+              ),
             ),
-            AdaptativeColors.elevatedButton("Cancelar", contexto, darkMode, () {
-              developer.log("Resetear datos Denegado");
-              Navigator.of(context).pop();
-            }),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: AdaptativeColors.elevatedButton("Cancelar", contexto, darkMode, () {
+                developer.log("Resetear datos Denegado");
+                Navigator.of(context).pop();
+              }),
+            ),
           ],
         );
       },

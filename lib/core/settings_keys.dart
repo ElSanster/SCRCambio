@@ -75,4 +75,9 @@ class DefaultValues {
   
   ///Usuario abre la aplicación por primera vez
   static const bool firstOpen = true;
+
+  ///Mensaje de bienvenida:
+  static const String welcomeMessage = "Bienvenido a SCR Cambio, para alternar el modo de luz, manten presionado en cualquer parte de la pantalla, O con la tecla espacio. OJO CON QUEMARSE LOS OJOS.";
+  static const String settingsMessage = "Para Acceder a la configuración de la app, presiona dos veces y desliza a la izquierda.\n O puedes presionar el botón de Escape para ir y regresar de la confifguración.";
+
 }
