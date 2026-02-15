@@ -1,7 +1,7 @@
 name: scrcambio_app
 description: "Usa la pantalla de tu dispositivo como una linterna más tenue"
 publish_to: 'none'
-version: 0.1.2+1
+version: 0.2.0+1
 
 environment:
   sdk: ^3.10.4

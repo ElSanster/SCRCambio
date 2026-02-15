@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 ///Fuentes de texto para el modo oscuro (Letra blanca que resalta con un fondo oscuro)
 class TextstylesDark {
+  /// Tamaño:12
+  static const TextStyle smallText = TextStyle(color: Colors.white, fontSize: 12);
   /// Tamaño:18
   static const TextStyle bodyText = TextStyle(color: Colors.white, fontSize: 18);
   /// Tamaño 18 + Negrilla
@@ -15,6 +17,8 @@ class TextstylesDark {
 
 ///Fuentes de texto para el modo oscuro (Letra negra que resalta con un fondo claro)
 class TextstylesLight {
+  ///Tamaño:12
+  static const TextStyle smallText = TextStyle(color: Colors.black, fontSize: 12);
   ///Tamaño:18
   static const TextStyle bodyText = TextStyle(color: Colors.black, fontSize: 18);
   ///Tamaño 18 + Negrilla

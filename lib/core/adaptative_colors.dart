@@ -12,6 +12,12 @@ class AdaptativeColors {
     return Color.lerp(base, primary, amount) ?? base;
   }
 
+  ///Devuelve el themedata dependiendo del darkMode, para ocasiones especiales.
+  static ThemeData themeData (bool darkMode){
+    ThemeData theme = darkMode ? ThemeData.dark() : ThemeData.light();
+    return theme;
+  }
+
 /// Devuelve un color para fondos de tarjeta que interpola entre el
   /// color base de la tarjeta y el color primario del tema.
   /// [amount] controla cuánto acercarse al color primario (0..1). Default 0.2 (20%).
@@ -32,6 +38,18 @@ class AdaptativeColors {
       style: darkMode ? TextstylesLight.bodyText : TextstylesDark.bodyText,
     );
   }
+
+
+///Genera un Text que usa el body text de text_styles
+///[text] Texto a usar
+///[darkMode] De este depende el modo de luz del texto
+static Text smallText (String text, bool darkMode){
+  return Text(
+    text,
+    style: darkMode ?TextstylesDark.smallText : TextstylesLight.smallText
+    ,
+    );
+}
 
 ///Genera un Text que usa el body text de text_styles
 ///[text] Texto a usar

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
 import 'package:scrcambio_app/screens/configuration_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() {
   runApp(const MainApp());
@@ -20,9 +21,11 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
   //Para los gestos
   bool _isDoubleTapping = false;
+  late AnimationController _swipeAnimationController;
+  late Animation<Offset> _swipeAnimation;
 
   //Inicializar variables
   bool _darkMode = DefaultValues.darkMode;
@@ -33,20 +36,37 @@ class _MainAppState extends State<MainApp> {
   double _brightnessDark = DefaultValues.brightnessDarkAndroid;
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
-  bool _firstOpen = DefaultValues.firstOpen;
+  bool _firstOpen = false;
   bool _firstOpenDialogShown = false;
 
   //Sobreescribir para cargar las opciones de configuración.
   @override
   void initState() {
-    _loadPrefs();
     log("initState disparado");
+    _swipeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _swipeAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(-0.3, 0))
+        .animate(CurvedAnimation(parent: _swipeAnimationController, curve: Curves.easeInOut));
+    log("Initstate: Carga de animaciones completada");
+    _loadPrefs();
     super.initState();
     log("initState finalizado");
   }
 
+  @override
+  void dispose() {
+    _swipeAnimationController.dispose();
+    super.dispose();
+  }
+
   ///Enviar usuario a la configuración, cuando vuelva a la pantalla principal, llamar _loadPrefs()
   void _navigateToConfiguration(BuildContext context) async {
+    // Ejecutar animación de deslizamiento
+    await _swipeAnimationController.forward();
+    _swipeAnimationController.reset();
+    
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ConfigurationScreen()),
@@ -103,6 +123,8 @@ class _MainAppState extends State<MainApp> {
           log("_brghtdark noAndroid supero el límite, reseteado a Default");
           _brightnessDark = DefaultValues.brightnessDarkOther;
         }
+
+
       }
 
       //Cargar modo de luz
@@ -127,10 +149,24 @@ class _MainAppState extends State<MainApp> {
           DefaultValues.keepAliveLight;
       log("_keepAliveLight: $_keepAliveLight");
 
+      //Cargar Wakelock
+      if(_darkMode){
+        if(_keepAliveDark){
+          WakelockPlus.enable();
+        }else{
+          WakelockPlus.disable();
+        }
+      }else if (_keepAliveLight){
+        WakelockPlus.enable();
+      }else{
+        WakelockPlus.disable();
+      }
+
       //Verificar primer inicio de aplicación
       _firstOpen =
           prefs.getBool(SettingKeys.firstOpen) ?? DefaultValues.firstOpen;
       log("_firstOpen: $_firstOpen");
+
     });
   }
 
@@ -150,9 +186,21 @@ class _MainAppState extends State<MainApp> {
         log("Switch de brillo usando themed (otros OS)");
         _opacity = _darkMode ? _brightnessDark : _brightnessLight;
       }
+      if(_darkMode){
+        if(_keepAliveDark){
+          WakelockPlus.enable();
+        }else{
+          WakelockPlus.disable();
+        }
+      }else if (_keepAliveLight){
+        WakelockPlus.enable();
+      }else{
+        WakelockPlus.disable();
+      }
     });
+    bool wakelockPlusEnabled = await WakelockPlus.enabled;
     log(
-      "Switch _darkMode: $_darkMode, brillo:${_darkMode ? _brightnessDark : _brightnessLight} _opacity $_opacity.",
+      "Switch _darkMode: $_darkMode, brillo:${_darkMode ? _brightnessDark : _brightnessLight} _opacity $_opacity wakelockPlus habilitado: $wakelockPlusEnabled",
     );
   }
 
@@ -163,70 +211,114 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       theme: _darkMode ? ThemeData.dark() : ThemeData.light(),
       home: Builder(
+        //Este builder nos da el contexto del materialapp para poder navegar a gusto a la config
         builder: (BuildContext scaffoldContext) {
-          //Este builder nos da el contexto del materialapp para poder navegar a gusto a la config
           // Mostrar el diálogo de bienvenida si es el primer inicio (solo una vez por sesión)
+          log("First Open (Builder): $_firstOpen");
           if (_firstOpen && !_firstOpenDialogShown) {
             _firstOpenDialogShown = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               firstOpenDialog(scaffoldContext);
             });
           }
-          return GestureDetector(
-            //Al mantener click
-            onLongPress: () {
-              log("INFO: Botón mantenido presionado");
-              _switchLightMode();
-              if (_firstOpen) {
-                settingsOpenDialog(scaffoldContext);
-              }
+          return CallbackShortcuts(
+            bindings: {
+              SingleActivator(LogicalKeyboardKey.escape): () {
+                log("Botón Ir a menú (ESC) Presionado.");
+                _navigateToConfiguration(scaffoldContext);
+              },
+              SingleActivator(LogicalKeyboardKey.space): () {
+                log("Botón switch (Espacio) presionado");
+          
+                _switchLightMode();
+                if (_firstOpen) {
+                  settingsOpenDialog(scaffoldContext);
+                }
+              },
             },
-            //Al tocar dos veces
-            onDoubleTapDown: (TapDownDetails details) {
-              //Retrasa la ejecución durante 300 microsegundos, y
-              // da tiempo a onHorizontalDragEnd a detectar el deliz a la izquierda
-              log("INFO: Doble toque registrado");
-              _isDoubleTapping = true;
-              Future.delayed(const Duration(milliseconds: 300), () {
-                _isDoubleTapping = false;
-              });
-            },
-            onHorizontalDragEnd: (DragEndDetails details) {
-              //Verifica que estemos durante este retraso para ir a la configuración
-              log("Deslizado registrado.");
-              if (_isDoubleTapping && details.velocity.pixelsPerSecond.dx < 0) {
-                log("Requisitos para configuración dados");
-                _navigateToConfiguration(
-                  scaffoldContext,
-                ); //Uso del contexto para ir a la config
-                _isDoubleTapping = false;
-              }
-            },
-            //Widget que mantiene el brillo en otros OS que Android
-            child: ChangeColors(
-              brightness: _opacity,
-              child: Scaffold(
-                body: CallbackShortcuts(
-                  bindings: {
-                    SingleActivator(LogicalKeyboardKey.escape): () {
-                      log("Botón Ir a menú Presionado.");
-                      _navigateToConfiguration(scaffoldContext);
-                    },
-                    SingleActivator(LogicalKeyboardKey.space): () {
-                      log("Botón switch presionado");
-                      _switchLightMode();
-                      if (_firstOpen) {
-                        settingsOpenDialog(scaffoldContext);
-                      }
-                    },
+            child: Focus(
+              autofocus: true,
+              child: CallbackShortcuts(
+                bindings: {
+                  SingleActivator(LogicalKeyboardKey.escape): () {
+                    log("Botón Ir a menú (ESC) Presionado.");
+                    _navigateToConfiguration(scaffoldContext);
                   },
-                  child: Focus(
-                    autofocus: true,
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Center(
-                        //Texto que cambia dependiendo del modo de luz de la app
-                        child: AdaptativeColors.textHomeTitle(_text, _darkMode),
+                  SingleActivator(LogicalKeyboardKey.space): () {
+                    log("Botón switch (Espacio) presionado");
+              
+                    _switchLightMode();
+                    if (_firstOpen) {
+                      settingsOpenDialog(scaffoldContext);
+                    }
+                  },
+                },
+                child: GestureDetector(
+                  onHorizontalDragEnd: (DragEndDetails details) {
+                    //Verifica que estemos durante este retraso para ir a la configuración
+                    log("Deslizado registrado.");
+                    if (_isDoubleTapping && details.velocity.pixelsPerSecond.dx < 0) {
+                      log("Requisitos para configuración dados");
+                      _navigateToConfiguration(
+                        scaffoldContext,
+                      ); //Uso del contexto para ir a la config
+                      _isDoubleTapping = false;
+                    }
+                  },
+                  child: ChangeColors(
+                    brightness: _opacity,
+                    child: Scaffold(
+                      body: Focus(
+                        autofocus: true,
+                        child: CallbackShortcuts(
+                          bindings: {
+                            SingleActivator(LogicalKeyboardKey.escape): () {
+                              log("Botón Ir a menú (ESC) Presionado.");
+                              _navigateToConfiguration(scaffoldContext);
+                            },
+                            SingleActivator(LogicalKeyboardKey.space): () {
+                              log("Botón switch (Espacio) presionado");
+                        
+                              _switchLightMode();
+                              if (_firstOpen) {
+                                settingsOpenDialog(scaffoldContext);
+                              }
+                            },
+                          },
+                          child: SlideTransition(
+                            position: _swipeAnimation,
+                            child: InkResponse(
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              onLongPress: () {
+                                log("INFO: Botón mantenido presionado");
+                                _switchLightMode();
+                                if (_firstOpen) {
+                                  settingsOpenDialog(scaffoldContext);
+                                }
+                              },
+                              onDoubleTap: () {
+                                //Retrasa la ejecución durante 500 microsegundos, y
+                                // da tiempo a onHorizontalDragEnd a detectar el deliz a la izquierda
+                                log("INFO: Doble toque registrado");
+                                _isDoubleTapping = true;
+                                Future.delayed(const Duration(milliseconds: 500), () {
+                                  _isDoubleTapping = false;
+                                });
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Center(
+                                  //Texto que cambia dependiendo del modo de luz de la app
+                                  child: AdaptativeColors.textHomeTitle(
+                                    _text,
+                                    _darkMode,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
