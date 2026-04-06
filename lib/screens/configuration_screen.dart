@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scrcambio_app/core/adaptative_colors.dart';
+import 'package:scrcambio_app/core/dohaptics.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
 import 'package:scrcambio_app/core/preferences_values.dart';
@@ -27,6 +28,12 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
   String _brightText = "Brillo";
+  bool _haptics = DefaultValues.haptics;
+  int _hapticsMode = DefaultValues.hapticsMode;
+  Color _darkColor = AdaptativeColors.backgroundColor(true);
+  Color _lightColor = AdaptativeColors.backgroundColor(true);
+  bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
+  bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   //Sobreescribimos esto para cargar los datos al abrir la ventana de configuración.
   @override
@@ -62,12 +69,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             "_brghtdark en android supero el límite, reseteado a Default",
           );
           _brightnessDark = DefaultValues.brightnessDarkAndroid;
-          PreferencesValues.resetSetting(
-            SettingKeys.brightnessDarkAndroid,
-            () {
-              _loadSettings();
-            },
-          );
+          PreferencesValues.resetSetting(SettingKeys.brightnessDarkAndroid, () {
+            _loadSettings();
+          });
         }
         if (_brightnessLight > 1 || _brightnessLight < 0) {
           developer.log(
@@ -100,24 +104,18 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             "_brghtLight noAndroid supero el límite, reseteado a Default",
           );
           _brightnessLight = DefaultValues.brightnessLightOther;
-          PreferencesValues.resetSetting(
-            SettingKeys.brightnessLightOther,
-            () {
-              _loadSettings();
-            },
-          );
+          PreferencesValues.resetSetting(SettingKeys.brightnessLightOther, () {
+            _loadSettings();
+          });
         }
         if (_brightnessDark > 1 || _brightnessDark < 0) {
           developer.log(
             "_brghtdark noAndroid supero el límite, reseteado a Default",
           );
           _brightnessDark = DefaultValues.brightnessDarkOther;
-          PreferencesValues.resetSetting(
-            SettingKeys.brightnessDarkOther,
-            () {
-              _loadSettings();
-            },
-          );
+          PreferencesValues.resetSetting(SettingKeys.brightnessDarkOther, () {
+            _loadSettings();
+          });
         }
       }
       developer.log(
@@ -147,13 +145,48 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       );
 
       //Setear firstOpen en caso de que el usuario abra la config antes que cambiar el modo de luz, o cuando presione el botón de reinicar configuracion
-      if (prefs.getBool(SettingKeys.firstOpen) ?? DefaultValues.firstOpen) {
+      if (prefs.getBool(SettingKeys.firstOpen) ??
+          DefaultValues.firstOpen ||
+              DefaultValues.forceMessagesDEBUG == false) {
         developer.log(
           "FirstOpen true detectado después de loadsettings, poniendolo en false.",
         );
         prefs.setBool(SettingKeys.firstOpen, false);
       }
-      //prefs.setBool(SettingKeys.firstOpen, true); //Usar para ver si o si los dialogos de inicio
+      if (DefaultValues.forceMessagesDEBUG) {
+        //Forzar mensajes de tutorial,
+        developer.log("FORZANDO MENSAJES DE TUTORIAL, CUIDAO CON ESO");
+        prefs.setBool(SettingKeys.firstOpen, true);
+      }
+
+      _haptics = prefs.getBool(SettingKeys.haptics) ?? DefaultValues.haptics;
+      developer.log("_haptics después de loadsettings $_haptics");
+
+      _hapticsMode =
+          prefs.getInt(SettingKeys.hapticsMode) ?? DefaultValues.hapticsMode;
+      developer.log("_hapticsMode después de loadsettings $_hapticsMode");
+
+      //Cargar si se usa el tema del sistema en modo oscuro
+      _useSystemThemeDark =
+          prefs.getBool(SettingKeys.useSystemThemeDark) ??
+          DefaultValues.useSystemThemeDark;
+
+      //Cargar si se usa el tema del sistema en modo claro
+      _useSystemThemeLight =
+          prefs.getBool(SettingKeys.useSystemThemeLight) ??
+          DefaultValues.useSystemThemeLight;
+
+      //Cargar color personalizado de modo oscuro
+      _darkColor = Color(
+        prefs.getInt(SettingKeys.darkColor) ??
+            AdaptativeColors.themeData(true).colorScheme.primary.value,
+      );
+
+      //Cargar color personalizado de modo claro
+      _lightColor = Color(
+        prefs.getInt(SettingKeys.lightColor) ??
+            AdaptativeColors.themeData(false).colorScheme.primary.value,
+      );
     });
   }
 
@@ -161,7 +194,11 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   Widget build(BuildContext context) {
     return Theme(
       //Aplicar tema correspondiente al modo que tenga el usuario
-      data: AdaptativeColors.themeData(_darkmode),
+      data: (_darkmode ? _useSystemThemeDark : _useSystemThemeLight)
+          ? AdaptativeColors.themeData(_darkmode)
+          : (_darkmode
+                ? AdaptativeColors.themeData(true, seedColor: _darkColor)
+                : AdaptativeColors.themeData(false, seedColor: _lightColor)),
       child: ChangeColors(
         //Capa que controla la opacidad fuera de android
         brightness: _opacity,
@@ -177,7 +214,17 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             child: Focus(
               autofocus: true,
               child: CardTheme(
-                color: AdaptativeColors.backgroundColor(_darkmode),
+                color: _useSystemThemeDark
+                    ? AdaptativeColors.backgroundColor(_darkmode)
+                    : (_darkmode
+                          ? AdaptativeColors.backgroundColor(
+                              true,
+                              seedColor: _darkColor,
+                            )
+                          : AdaptativeColors.backgroundColor(
+                              false,
+                              seedColor: _lightColor,
+                            )),
                 child: ListView(
                   children: [
                     Padding(
@@ -228,6 +275,84 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                               },
                             ),
                           ),
+
+                          if (Platform.isAndroid)
+                            Card(
+                              child: Column(
+                                children: [
+                                  SwitchListTile(
+                                    title: AdaptativeColors.textBody(
+                                      "Vibración al cambio",
+                                      _darkmode,
+                                    ),
+                                    secondary: Icon(Icons.vibration),
+                                    value: _haptics,
+                                    onChanged: (newHaptics) {
+                                      setState(() {
+                                        _haptics = newHaptics;
+                                        PreferencesValues.saveSetting(
+                                          SettingKeys.haptics,
+                                          newHaptics,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Row(
+                                      children: [
+                                        AdaptativeColors.textBody(
+                                          "Tipo de Vibración",
+                                          _darkmode,
+                                        ),
+                                        Spacer(),
+                                        DropdownMenu(
+                                          dropdownMenuEntries:
+                                              <DropdownMenuEntry<int>>[
+                                                DropdownMenuEntry(
+                                                  value: 0,
+                                                  label: "Ligera",
+                                                ),
+                                                DropdownMenuEntry(
+                                                  value: 1,
+                                                  label: "Suave",
+                                                ),
+                                                DropdownMenuEntry(
+                                                  value: 2,
+                                                  label: "Mediana",
+                                                ),
+                                                DropdownMenuEntry(
+                                                  value: 3,
+                                                  label: "Pesada",
+                                                ),
+                                                DropdownMenuEntry(
+                                                  value: 4,
+                                                  label: "Rigida",
+                                                ),
+                                              ],
+                                          onSelected: (value) {
+                                            if (value != null &&
+                                                !(value < 0 || value > 8)) {
+                                              setState(() {
+                                                _hapticsMode = value;
+                                              });
+                                              Dohaptics.dohaptics(value, true);
+                                              PreferencesValues.saveSetting(
+                                                SettingKeys.hapticsMode,
+                                                value,
+                                              );
+                                            }
+                                          },
+                                          enabled: _haptics,
+                                          width: 200,
+                                          hintText: "Ligera",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
 
                           Card(
                             child: Column(
@@ -300,7 +425,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                                         builder: (context) =>
                                             const LightModeConfigScreen(),
                                       ),
-                                    );
+                                    ).then((_) => _loadSettings());
                                   },
                                 ),
                               ],
@@ -377,7 +502,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                                         builder: (context) =>
                                             const DarkModeConfigScreen(),
                                       ),
-                                    );
+                                    ).then((_) => _loadSettings());
                                   },
                                 ),
                               ],
@@ -454,10 +579,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   if (_darkmode == false) {
                     setState(() {
                       _darkmode = true;
-                      PreferencesValues.saveSetting(
-                        SettingKeys.darkMode,
-                        true,
-                      );
+                      PreferencesValues.saveSetting(SettingKeys.darkMode, true);
                     });
                   }
                 },
@@ -484,10 +606,20 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   () {
                     if (Platform.isAndroid) {
                       _brightnessDark = DefaultValues.brightnessDarkAndroid;
-                      PreferencesValues.resetSetting(SettingKeys.brightnessDarkAndroid, (){_loadSettings();});
+                      PreferencesValues.resetSetting(
+                        SettingKeys.brightnessDarkAndroid,
+                        () {
+                          _loadSettings();
+                        },
+                      );
                     } else {
                       _brightnessDark = DefaultValues.brightnessDarkOther;
-                      PreferencesValues.resetSetting(SettingKeys.brightnessDarkOther, (){_loadSettings();});
+                      PreferencesValues.resetSetting(
+                        SettingKeys.brightnessDarkOther,
+                        () {
+                          _loadSettings();
+                        },
+                      );
                     }
                   },
                 ),
@@ -529,11 +661,14 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                       Brightnessandroid.setBrightness(_brightnessLight);
                       PreferencesValues.saveSetting(
                         SettingKeys.brightnessLightAndroid,
-                        _brightnessLight
+                        _brightnessLight,
                       );
                     } else {
                       _opacity = newBrightnesLight * -1;
-                      PreferencesValues.saveSetting(SettingKeys.brightnessLightOther, _opacity);
+                      PreferencesValues.saveSetting(
+                        SettingKeys.brightnessLightOther,
+                        _opacity,
+                      );
                     }
                   });
                 },
@@ -542,7 +677,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   if (_darkmode == true) {
                     setState(() {
                       _darkmode = false;
-                      PreferencesValues.saveSetting(SettingKeys.darkMode, false);
+                      PreferencesValues.saveSetting(
+                        SettingKeys.darkMode,
+                        false,
+                      );
                     });
                   }
                 },
@@ -568,10 +706,20 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   () {
                     if (Platform.isAndroid) {
                       _brightnessLight = DefaultValues.brightnessLightAndroid;
-                      PreferencesValues.resetSetting(SettingKeys.brightnessLightAndroid, (){_loadSettings();});
+                      PreferencesValues.resetSetting(
+                        SettingKeys.brightnessLightAndroid,
+                        () {
+                          _loadSettings();
+                        },
+                      );
                     } else {
                       _brightnessLight = DefaultValues.brightnessLightOther;
-                      PreferencesValues.resetSetting(SettingKeys.brightnessLightOther, (){_loadSettings();});
+                      PreferencesValues.resetSetting(
+                        SettingKeys.brightnessLightOther,
+                        () {
+                          _loadSettings();
+                        },
+                      );
                     }
                   },
                 ),
@@ -587,44 +735,47 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     developer.log("Resetear datos llamado");
     showDialog(
       context: contexto,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          backgroundColor: AdaptativeColors.backgroundColor(darkMode),
-          title: AdaptativeColors.textTitle(
-            "Reiniciar Configuración",
-            darkMode,
-          ),
-          content: AdaptativeColors.textBody(
-            "¿Está seguro de reiniciar la configuración a estado de fábrica?",
-            darkMode,
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: TextButton(
-                onPressed: () {
-                  developer.log("Resetear datos Aceptado");
-                  PreferencesValues.resetAllSettings((){_loadSettings();});
-                  Navigator.of(context).pop();
-                },
-                child: AdaptativeColors.textBody("Confirmar", darkMode),
-              ),
+      builder: (BuildContext ctx) => Theme(
+        data: AdaptativeColors.themeData(darkMode , seedColor: _darkColor),
+          child: AlertDialog(
+            backgroundColor: AdaptativeColors.backgroundColor(darkMode),
+            title: AdaptativeColors.textTitle(
+              "Reiniciar Configuración",
+              darkMode,
             ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: AdaptativeColors.elevatedButton(
-                "Cancelar",
-                contexto,
-                darkMode,
-                () {
-                  developer.log("Resetear datos Denegado");
-                  Navigator.of(context).pop();
-                },
-              ),
+            content: AdaptativeColors.textBody(
+              "¿Está seguro de reiniciar la configuración a estado de fábrica?${DefaultValues.forceMessagesDEBUG ? "\nMODO FORZAR MENSAJE ACTIVADO, Avisale a Sanster si ves esto." : ""}",
+              darkMode,
             ),
-          ],
-        );
-      },
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: TextButton(
+                  onPressed: () {
+                    developer.log("Resetear datos Aceptado");
+                    PreferencesValues.resetAllSettings(() {
+                      _loadSettings();
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: AdaptativeColors.textBody("Confirmar", darkMode),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: AdaptativeColors.elevatedButton(
+                  "Cancelar",
+                  contexto,
+                  darkMode,
+                  () {
+                    developer.log("Resetear datos Denegado");
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
     );
   }
 }

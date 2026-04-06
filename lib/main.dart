@@ -1,8 +1,10 @@
-import 'dart:developer'; //Para logear "log()" variables ya que no las muestra en el visual
+import 'dart:developer' as developer;//Para logear "log()" variables ya que no las muestra en el visual
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:scrcambio_app/core/adaptative_colors.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
+import 'package:scrcambio_app/core/dohaptics.dart';
+import 'package:scrcambio_app/core/preferences_values.dart';
 import 'package:themed/themed.dart';
 import 'package:flutter/material.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
@@ -27,7 +29,7 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
   late AnimationController _swipeAnimationController;
   late Animation<Offset> _swipeAnimation;
 
-  //Inicializar variables
+  //Inicializar variables con placeholders
   bool _darkMode = DefaultValues.darkMode;
   bool _textEnabled = DefaultValues.homeText;
   String _text = "Cambio";
@@ -38,21 +40,32 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
   double _opacity = DefaultValues.brightnessLightOther;
   bool _firstOpen = false;
   bool _firstOpenDialogShown = false;
+  bool _haptics = DefaultValues.haptics;
+  int _hapticsMode = DefaultValues.hapticsMode;
+  Color _darkColor = AdaptativeColors.backgroundColor(true);
+  Color _lightColor = AdaptativeColors.backgroundColor(true);
+  bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
+  bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   //Sobreescribir para cargar las opciones de configuración.
   @override
   void initState() {
-    log("initState disparado");
+    developer.log("initState disparado");
     _swipeAnimationController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _swipeAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(-0.3, 0))
-        .animate(CurvedAnimation(parent: _swipeAnimationController, curve: Curves.easeInOut));
-    log("Initstate: Carga de animaciones completada");
+    _swipeAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(-0.3, 0)).animate(
+          CurvedAnimation(
+            parent: _swipeAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+    developer.log("Initstate: Carga de animaciones completada");
     _loadPrefs();
     super.initState();
-    log("initState finalizado");
+    developer.log("initState finalizado");
   }
 
   @override
@@ -66,14 +79,14 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
     // Ejecutar animación de deslizamiento
     await _swipeAnimationController.forward();
     _swipeAnimationController.reset();
-    
+
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ConfigurationScreen()),
     );
     //Al volver de la configuración recargar las opciones.
     _loadPrefs();
-    log("SetState de la configuración disparada");
+    developer.log("SetState de la configuración disparada");
   }
 
   ///Cargar las variables necesarias de SharedPreferences y actualizar widget. asíncrono
@@ -94,11 +107,11 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
           _darkMode ? _brightnessDark : _brightnessLight,
         );
         if (_brightnessDark > 1 || _brightnessDark < 0) {
-          log("_brghtdark en android supero el límite, usando Default");
+          developer.log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessDarkAndroid;
         }
         if (_brightnessLight > 1 || _brightnessLight < 0) {
-          log("_brghtdark en android supero el límite, usando Default");
+          developer.log("_brghtdark en android supero el límite, usando Default");
           _brightnessDark = DefaultValues.brightnessLightAndroid;
         }
       } else {
@@ -116,56 +129,74 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
             DefaultValues.brightnessLightOther;
 
         if (_brightnessLight > 0 || _brightnessLight < -1) {
-          log("_brghtLight noAndroid supero el límite, reseteado a Default");
+          developer.log("_brghtLight noAndroid supero el límite, reseteado a Default");
           _brightnessLight = DefaultValues.brightnessLightOther;
         }
         if (_brightnessDark > 0 || _brightnessDark < -1) {
-          log("_brghtdark noAndroid supero el límite, reseteado a Default");
+          developer.log("_brghtdark noAndroid supero el límite, reseteado a Default");
           _brightnessDark = DefaultValues.brightnessDarkOther;
         }
-
-
       }
 
       //Cargar modo de luz
       _darkMode = prefs.getBool(SettingKeys.darkMode) ?? DefaultValues.darkMode;
-      log("_darkMode: $_darkMode");
+      developer.log("_darkMode: $_darkMode");
 
       //Cargar texto
       _textEnabled =
           prefs.getBool(SettingKeys.homeText) ?? DefaultValues.homeText;
       _text = _textEnabled ? "Cambio" : "";
-      log("_textEnabled: $_textEnabled, _text: $_text");
+      developer.log("_textEnabled: $_textEnabled, _text: $_text");
 
       //Cargar mantener pantalla encendida en modo oscuro
       _keepAliveDark =
           prefs.getBool(SettingKeys.keepAwakeDark) ??
           DefaultValues.keepAliveDark;
-      log("_keepAliveDark: $_keepAliveDark");
+      developer.log("_keepAliveDark: $_keepAliveDark");
 
       //Cargar mantener pantalla encendida en modo claro
       _keepAliveLight =
           prefs.getBool(SettingKeys.keepAwakeLight) ??
           DefaultValues.keepAliveLight;
-      log("_keepAliveLight: $_keepAliveLight");
+      developer.log("_keepAliveLight: $_keepAliveLight");
 
       //Cargar Wakelock
-      if(_darkMode){
-        if(_keepAliveDark){
+      if (_darkMode) {
+        if (_keepAliveDark) {
           WakelockPlus.enable();
-        }else{
+        } else {
           WakelockPlus.disable();
         }
-      }else if (_keepAliveLight){
+      } else if (_keepAliveLight) {
         WakelockPlus.enable();
-      }else{
+      } else {
         WakelockPlus.disable();
       }
 
       //Verificar primer inicio de aplicación
       _firstOpen =
           prefs.getBool(SettingKeys.firstOpen) ?? DefaultValues.firstOpen;
-      log("_firstOpen: $_firstOpen");
+      developer.log("_firstOpen: $_firstOpen");
+
+      //Cargar vibracion activada
+      _haptics = prefs.getBool(SettingKeys.haptics) ?? DefaultValues.firstOpen;
+      developer.log("_haptics: $_haptics");
+
+      //Cargar tipo de vibración
+      _hapticsMode = prefs.getInt(SettingKeys.hapticsMode) ?? DefaultValues.hapticsMode;
+      developer.log("_hapticsMode:$_hapticsMode");
+
+      //Cargar si se usa el tema del sistema en modo oscuro
+      _useSystemThemeDark = prefs.getBool(SettingKeys.useSystemThemeDark) ?? DefaultValues.useSystemThemeDark;
+
+      //Cargar si se usa el tema del sistema en modo claro
+      _useSystemThemeLight = prefs.getBool(SettingKeys.useSystemThemeLight) ?? DefaultValues.useSystemThemeLight;
+
+      //Cargar color personalizado de modo oscuro
+      _darkColor = Color(prefs.getInt(SettingKeys.darkColor) ?? AdaptativeColors.themeData(true).colorScheme.primary.value);
+
+      //Cargar color personalizado de modo claro
+      _lightColor = Color(prefs.getInt(SettingKeys.lightColor) ?? AdaptativeColors.themeData(false).colorScheme.primary.value);
 
     });
   }
@@ -178,28 +209,29 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
       prefs.setBool(SettingKeys.darkMode, _darkMode);
       //Dependiendo del modo oscuro poner el brillo correspondiente
       if (Platform.isAndroid) {
-        log("Switch de brillo usando setBrightness (android)");
+        developer.log("Switch de brillo usando setBrightness (android)");
         Brightnessandroid.setBrightness(
           _darkMode ? _brightnessDark : _brightnessLight,
         );
       } else {
-        log("Switch de brillo usando themed (otros OS)");
+        developer.log("Switch de brillo usando themed (otros OS)");
         _opacity = _darkMode ? _brightnessDark : _brightnessLight;
       }
-      if(_darkMode){
-        if(_keepAliveDark){
+      if (_darkMode) {
+        if (_keepAliveDark) {
           WakelockPlus.enable();
-        }else{
+        } else {
           WakelockPlus.disable();
         }
-      }else if (_keepAliveLight){
+      } else if (_keepAliveLight) {
         WakelockPlus.enable();
-      }else{
+      } else {
         WakelockPlus.disable();
       }
     });
+    Dohaptics.dohaptics(_hapticsMode,_haptics);
     bool wakelockPlusEnabled = await WakelockPlus.enabled;
-    log(
+    developer.log(
       "Switch _darkMode: $_darkMode, brillo:${_darkMode ? _brightnessDark : _brightnessLight} _opacity $_opacity wakelockPlus habilitado: $wakelockPlusEnabled",
     );
   }
@@ -209,27 +241,30 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
     //Material app contiene los temas y transciciones rápidas, tambien el contexto para navegar
     //a la configuración, transferido al builder
     return MaterialApp(
-      theme: _darkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: _useSystemThemeLight ? AdaptativeColors.themeData(false) :AdaptativeColors.themeData(false, seedColor: _lightColor),
+      darkTheme: _useSystemThemeDark ? AdaptativeColors.themeData(true) :AdaptativeColors.themeData(true, seedColor: _darkColor),
+      themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
       home: Builder(
         //Este builder nos da el contexto del materialapp para poder navegar a gusto a la config
         builder: (BuildContext scaffoldContext) {
           // Mostrar el diálogo de bienvenida si es el primer inicio (solo una vez por sesión)
-          log("First Open (Builder): $_firstOpen");
+          developer.log("First Open (Builder): $_firstOpen");
           if (_firstOpen && !_firstOpenDialogShown) {
             _firstOpenDialogShown = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               firstOpenDialog(scaffoldContext);
             });
           }
+          //Este es para las teclas
           return CallbackShortcuts(
             bindings: {
               SingleActivator(LogicalKeyboardKey.escape): () {
-                log("Botón Ir a menú (ESC) Presionado.");
+                developer.log("Botón Ir a menú (ESC) Presionado.");
                 _navigateToConfiguration(scaffoldContext);
               },
               SingleActivator(LogicalKeyboardKey.space): () {
-                log("Botón switch (Espacio) presionado");
-          
+                developer.log("Botón switch (Espacio) presionado");
+
                 _switchLightMode();
                 if (_firstOpen) {
                   settingsOpenDialog(scaffoldContext);
@@ -241,12 +276,14 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
               child: CallbackShortcuts(
                 bindings: {
                   SingleActivator(LogicalKeyboardKey.escape): () {
-                    log("Botón Ir a menú (ESC) Presionado.");
+                    developer.log("Botón Ir a menú (ESC) Presionado.");
                     _navigateToConfiguration(scaffoldContext);
                   },
                   SingleActivator(LogicalKeyboardKey.space): () {
-                    log("Botón switch (Espacio) presionado");
-              
+                    developer.log("Botón switch (Espacio) presionado");
+                    if (_firstOpen) {
+                      settingsOpenDialog(scaffoldContext);
+                    }
                     _switchLightMode();
                     if (_firstOpen) {
                       settingsOpenDialog(scaffoldContext);
@@ -256,9 +293,10 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
                 child: GestureDetector(
                   onHorizontalDragEnd: (DragEndDetails details) {
                     //Verifica que estemos durante este retraso para ir a la configuración
-                    log("Deslizado registrado.");
-                    if (_isDoubleTapping && details.velocity.pixelsPerSecond.dx < 0) {
-                      log("Requisitos para configuración dados");
+                    developer.log("Deslizado registrado.");
+                    if (_isDoubleTapping &&
+                        details.velocity.pixelsPerSecond.dx < 0) {
+                      developer.log("Requisitos para configuración dados");
                       _navigateToConfiguration(
                         scaffoldContext,
                       ); //Uso del contexto para ir a la config
@@ -273,12 +311,12 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
                         child: CallbackShortcuts(
                           bindings: {
                             SingleActivator(LogicalKeyboardKey.escape): () {
-                              log("Botón Ir a menú (ESC) Presionado.");
+                              developer.log("Botón Ir a menú (ESC) Presionado.");
                               _navigateToConfiguration(scaffoldContext);
                             },
                             SingleActivator(LogicalKeyboardKey.space): () {
-                              log("Botón switch (Espacio) presionado");
-                        
+                              developer.log("Botón switch (Espacio) presionado");
+
                               _switchLightMode();
                               if (_firstOpen) {
                                 settingsOpenDialog(scaffoldContext);
@@ -291,7 +329,7 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
                               focusColor: Colors.transparent,
                               hoverColor: Colors.transparent,
                               onLongPress: () {
-                                log("INFO: Botón mantenido presionado");
+                                developer.log("INFO: Botón mantenido presionado");
                                 _switchLightMode();
                                 if (_firstOpen) {
                                   settingsOpenDialog(scaffoldContext);
@@ -300,11 +338,14 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
                               onDoubleTap: () {
                                 //Retrasa la ejecución durante 500 microsegundos, y
                                 // da tiempo a onHorizontalDragEnd a detectar el deliz a la izquierda
-                                log("INFO: Doble toque registrado");
+                                developer.log("INFO: Doble toque registrado");
                                 _isDoubleTapping = true;
-                                Future.delayed(const Duration(milliseconds: 500), () {
-                                  _isDoubleTapping = false;
-                                });
+                                Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                  () {
+                                    _isDoubleTapping = false;
+                                  },
+                                );
                               },
                               child: Container(
                                 alignment: Alignment.center,
@@ -353,7 +394,7 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
                 scaffoldContext,
                 _darkMode,
                 () {
-                  log("Bienvenida Aceptada :)");
+                  developer.log("Bienvenida Aceptada :)");
                   Navigator.of(ctx).pop();
                 },
               ),
@@ -364,10 +405,9 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
     }
   }
 
-  void settingsOpenDialog(BuildContext scaffoldContext) async {
+  void settingsOpenDialog(BuildContext scaffoldContext)  {
     //Llamar respectiva tarjeta de bienvenida
-    log("Primer inicio detectado para cuadro de info de config");
-    final prefs = await SharedPreferences.getInstance();
+    developer.log("Primer inicio detectado para cuadro de info de config");
     showDialog(
       context: scaffoldContext,
       builder: (BuildContext ctx) {
@@ -387,12 +427,12 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
               scaffoldContext,
               _darkMode,
               () {
-                log("Bienvenida  config Aceptada, seteando _firstOpen :)");
+                developer.log("Bienvenida  config Aceptada, seteando _firstOpen :)");
                 // Marcar que ya se mostró el diálogo de bienvenida
                 setState(() {
                   _firstOpen = false;
                 });
-                prefs.setBool(SettingKeys.firstOpen, false);
+                PreferencesValues.saveSetting(SettingKeys.firstOpen, false);
                 Navigator.of(ctx).pop();
               },
             ),

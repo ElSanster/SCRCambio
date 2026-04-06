@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scrcambio_app/components/color_selector_title.dart';
 import 'package:scrcambio_app/core/adaptative_colors.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
 import 'package:scrcambio_app/core/preferences_values.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:themed/themed.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class DarkModeConfigScreen extends StatefulWidget {
@@ -26,6 +28,10 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
   String _brightText = "Brillo";
+  Color _darkColor = AdaptativeColors.backgroundColor(true);
+  Color _lightColor = AdaptativeColors.backgroundColor(true);
+  bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
+  bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   @override
   void initState() {
@@ -87,7 +93,6 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
             prefs.getDouble(SettingKeys.brightnessLightOther) ??
             DefaultValues.brightnessLightOther;
         _brightText = "Opacidad";
-
         if (_brightnessLight > 1 || _brightnessLight < 0) {
           developer.log(
             "_brghtLight noAndroid supero el límite, reseteado a Default",
@@ -107,6 +112,11 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
           });
         }
       }
+      _darkColor = Color(
+        prefs.getInt(SettingKeys.darkColor) ??
+            AdaptativeColors.themeData(true).colorScheme.primary.value,
+      );
+
       developer.log(
         "_opacity: $_opacity, _brDark: $_brightnessDark, _brLight: $_brightnessLight",
       );
@@ -146,111 +156,217 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
         WakelockPlus.disable();
       }
     });
+
+    //Cargar si se usa el tema del sistema en modo oscuro
+    _useSystemThemeDark =
+        prefs.getBool(SettingKeys.useSystemThemeDark) ??
+        DefaultValues.useSystemThemeDark;
+
+    //Cargar si se usa el tema del sistema en modo claro
+    _useSystemThemeLight =
+        prefs.getBool(SettingKeys.useSystemThemeLight) ??
+        DefaultValues.useSystemThemeLight;
+
+    //Cargar color personalizado de modo oscuro
+    _darkColor = Color(
+      prefs.getInt(SettingKeys.darkColor) ??
+          AdaptativeColors.themeData(true).colorScheme.primary.value,
+    );
+
+    //Cargar color personalizado de modo claro
+    _lightColor = Color(
+      prefs.getInt(SettingKeys.lightColor) ??
+          AdaptativeColors.themeData(false).colorScheme.primary.value,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: AdaptativeColors.themeData(_darkmode),
-      child: Scaffold(
-        appBar: AppBar(title: Text("Modo Oscuro - SCRCambio")),
-        body: CallbackShortcuts(
-          bindings: {
-            SingleActivator(LogicalKeyboardKey.escape): () {
-              developer.log("Botón Ir a menú principal Presionado.");
-              Navigator.pop(context);
+      data: _useSystemThemeDark
+          ? AdaptativeColors.themeData(_darkmode)
+          : (_darkmode
+                ? AdaptativeColors.themeData(true, seedColor: _darkColor)
+                : AdaptativeColors.themeData(false, seedColor: _lightColor)),
+      child: ChangeColors(
+        brightness: _opacity,
+        child: Scaffold(
+          appBar: AppBar(title: Text("Modo Oscuro - SCRCambio")),
+          body: CallbackShortcuts(
+            bindings: {
+              SingleActivator(LogicalKeyboardKey.escape): () {
+                developer.log("Botón Ir a menú principal Presionado.");
+                Navigator.pop(context);
+              },
             },
-          },
-          child: Focus(
-            autofocus: true,
-            child: CardTheme(
-              color: AdaptativeColors.backgroundColor(_darkmode),
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsetsGeometry.all(8),
-                    child: Column(
-                      children: [
-                        Card(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: AdaptativeColors.subtitle(
-                                  "Modo Oscuro",
-                                  _darkmode,
-                                ),
-                                leading: Icon(Icons.dark_mode_outlined),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8.0,
-                                  right: 8,
-                                ),
-                                child: Divider(),
-                              ),
-                              Tooltip(
-                                message:
-                                    "Evita que la pantalla se apague en modo oscuro, Puede gastar más batería",
-                                child: SwitchListTile(
-                                  title: AdaptativeColors.textBody(
-                                    "Mantener pantalla encendida",
+            child: Focus(
+              autofocus: true,
+              child: CardTheme(
+                color: _useSystemThemeDark
+                    ? AdaptativeColors.backgroundColor(_darkmode)
+                    : (_darkmode
+                          ? AdaptativeColors.backgroundColor(
+                              true,
+                              seedColor: _darkColor,
+                            )
+                          : AdaptativeColors.backgroundColor(
+                              false,
+                              seedColor: _lightColor,
+                            )),
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsetsGeometry.all(8),
+                      child: Column(
+                        children: [
+                          //Selección de opacidad y mantener encendido
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: AdaptativeColors.subtitle(
+                                    "Modo Oscuro",
                                     _darkmode,
                                   ),
-                                  value: _keepAliveDark,
-                                  onChanged: (newkeepAliveDark) {
-                                    setState(() {
-                                      _keepAliveDark = newkeepAliveDark;
-                                      PreferencesValues.saveSetting(
-                                        SettingKeys.keepAwakeDark,
-                                        newkeepAliveDark,
-                                      );
-                                    });
-                                  },
+                                  leading: Icon(Icons.dark_mode_outlined),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8.0,
-                                  right: 8,
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
                                 ),
-                                child: Divider(),
-                              ),
-                              //Slider para modificar el brillo en modo oscuro
-                              sliderBrightnessDark(context),
-                              Card(
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      title: AdaptativeColors.textTitle(
-                                        "Vista Previa",
-                                        _darkmode,
-                                      ),
+                                Tooltip(
+                                  message:
+                                      "Evita que la pantalla se apague en modo oscuro, Puede gastar más batería",
+                                  child: SwitchListTile(
+                                    title: AdaptativeColors.textBody(
+                                      "Mantener pantalla encendida",
+                                      _darkmode,
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 8.0,
-                                        right: 8,
-                                      ),
-                                      child: Divider(),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: 400,
-                                        child: mainSimulate(),
-                                      ),
-                                    ),
-                                  ],
+                                    value: _keepAliveDark,
+                                    onChanged: (newkeepAliveDark) {
+                                      setState(() {
+                                        _keepAliveDark = newkeepAliveDark;
+                                        PreferencesValues.saveSetting(
+                                          SettingKeys.keepAwakeDark,
+                                          newkeepAliveDark,
+                                        );
+                                      });
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
+                                ),
+                                //Slider para modificar el brillo en modo oscuro
+                                sliderBrightnessDark(context),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
+                                ),
+                                //Selección de colores
+                                Card(
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        title: AdaptativeColors.textTitle(
+                                          "Colores",
+                                          _darkmode,
+                                        ),
+                                        leading: Icon(Icons.palette_outlined),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 8.0,
+                                          right: 8,
+                                        ),
+                                        child: Divider(),
+                                      ),
+                                      Tooltip(
+                                        message:
+                                            "Usa los colores de por defecto (Usualmente del sistema en Android)",
+                                        child: SwitchListTile(
+                                          title: AdaptativeColors.textBody(
+                                            "Usar colores del sistema",
+                                            _darkmode,
+                                          ),
+                                          value: _useSystemThemeDark,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              PreferencesValues.saveSetting(
+                                                SettingKeys.useSystemThemeDark,
+                                                value,
+                                              );
+                                              _useSystemThemeDark = value;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      if (_useSystemThemeDark == false)
+                                        ColorSelectorTile(
+                                          text: "Color para modo Oscuro",
+                                          currentColor: _darkColor,
+                                          presetColors:
+                                              AdaptativeColors.darkColors,
+                                          darkMode: _darkmode,
+                                          onColorChanged: (color) {
+                                            setState(() {
+                                              _darkColor = color;
+                                              PreferencesValues.saveSetting(
+                                                SettingKeys.darkColor,
+                                                color,
+                                              );
+                                            });
+                                          },
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                //Vista previa
+                                Card(
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        title: AdaptativeColors.textTitle(
+                                          "Vista Previa",
+                                          _darkmode,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 8.0,
+                                          right: 8,
+                                        ),
+                                        child: Divider(),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 400,
+                                          child: mainSimulate(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -354,26 +470,37 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
     );
   }
 
-  Scaffold mainSimulate() {
+  Widget mainSimulate() {
     String text;
     if (_homeText) {
       text = "Cambio";
     } else {
       text = "";
     }
-    return Scaffold(
-      backgroundColor: AdaptativeColors.backgroundColor(true),
-      body: InkResponse(
-        onDoubleTap: () {},
-        child: Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-          alignment: Alignment.center,
-          child: Center(
-            //Texto que cambia dependiendo del modo de luz de la app
-            child: AdaptativeColors.textHomeTitle(text, true),
+    return Builder(
+      builder: (context) {
+        return Theme(
+          data: _useSystemThemeDark
+              ? AdaptativeColors.themeData(_darkmode)
+              : AdaptativeColors.themeData(true, seedColor: _darkColor),
+          child: Scaffold(
+            body: InkResponse(
+              focusColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              onLongPress: () {},
+              onDoubleTap: () {},
+              child: Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                alignment: Alignment.center,
+                child: Center(
+                  //Texto que cambia dependiendo del modo de luz de la app
+                  child: AdaptativeColors.textHomeTitle(text, true),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 }

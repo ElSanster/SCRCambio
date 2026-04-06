@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scrcambio_app/components/color_selector_title.dart';
 import 'package:scrcambio_app/core/adaptative_colors.dart';
 import 'package:scrcambio_app/core/brightness_android.dart';
 import 'package:scrcambio_app/core/settings_keys.dart';
 import 'package:scrcambio_app/core/preferences_values.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:themed/themed.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class LightModeConfigScreen extends StatefulWidget {
@@ -26,6 +28,10 @@ class _LightModeConfigScreenState extends State<LightModeConfigScreen> {
   double _brightnessLight = DefaultValues.brightnessLightAndroid;
   double _opacity = DefaultValues.brightnessLightOther;
   String _brightText = "Brillo";
+  Color _darkColor = AdaptativeColors.backgroundColor(true);
+  Color _lightColor = AdaptativeColors.backgroundColor(true);
+  bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
+  bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   @override
   void initState() {
@@ -145,114 +151,214 @@ class _LightModeConfigScreenState extends State<LightModeConfigScreen> {
       } else {
         WakelockPlus.disable();
       }
+
+      //Cargar si se usa el tema del sistema en modo oscuro
+      _useSystemThemeDark =
+          prefs.getBool(SettingKeys.useSystemThemeDark) ??
+          DefaultValues.useSystemThemeDark;
+
+      //Cargar si se usa el tema del sistema en modo claro
+      _useSystemThemeLight =
+          prefs.getBool(SettingKeys.useSystemThemeLight) ??
+          DefaultValues.useSystemThemeLight;
+
+      //Cargar color personalizado de modo oscuro
+      _darkColor = Color(
+        prefs.getInt(SettingKeys.darkColor) ??
+            AdaptativeColors.themeData(true).colorScheme.primary.value,
+      );
+
+      //Cargar color personalizado de modo claro
+      _lightColor = Color(
+        prefs.getInt(SettingKeys.lightColor) ??
+            AdaptativeColors.themeData(false).colorScheme.primary.value,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: AdaptativeColors.themeData(_darkmode),
-      child: Scaffold(
-        appBar: AppBar(title: Text("Modo claro - SCRCambio")),
-        body: CallbackShortcuts(
-          bindings: {
-            SingleActivator(LogicalKeyboardKey.escape): () {
-              developer.log("Botón Ir a menú principal Presionado.");
-              Navigator.pop(context);
+      data: _useSystemThemeLight
+          ? AdaptativeColors.themeData(_darkmode)
+          : (_darkmode
+                ? AdaptativeColors.themeData(true, seedColor: _darkColor)
+                : AdaptativeColors.themeData(false, seedColor: _lightColor)),
+      child: ChangeColors(
+        brightness: _opacity,
+        child: Scaffold(
+          appBar: AppBar(title: Text("Modo claro - SCRCambio")),
+          body: CallbackShortcuts(
+            bindings: {
+              SingleActivator(LogicalKeyboardKey.escape): () {
+                developer.log("Botón Ir a menú principal Presionado.");
+                Navigator.pop(context);
+              },
             },
-          },
-          child: Focus(
-            autofocus: true,
-            child: CardTheme(
-              color: AdaptativeColors.backgroundColor(_darkmode),
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsetsGeometry.all(8),
-                    child: Column(
-                      children: [
-                        Card(
-                          child: ListTile(
-                            title: AdaptativeColors.subtitle(
-                              "Modo Claro",
-                              _darkmode,
-                            ),
-                            leading: Icon(Icons.light_mode_outlined),
-                          ),
-                        ),
-                        Card(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: AdaptativeColors.textTitle(
-                                  "General",
-                                  _darkmode,
-                                ),
-                                leading: Icon(Icons.wb_sunny_outlined),
+            child: Focus(
+              autofocus: true,
+              child: CardTheme(
+                color: _useSystemThemeLight
+                    ? AdaptativeColors.backgroundColor(_darkmode)
+                    : (_darkmode
+                          ? AdaptativeColors.backgroundColor(
+                              true,
+                              seedColor: _darkColor,
+                            )
+                          : AdaptativeColors.backgroundColor(
+                              false,
+                              seedColor: _lightColor,
+                            )),
+                child: ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsetsGeometry.all(8),
+                      child: Column(
+                        children: [
+                          Card(
+                            child: ListTile(
+                              title: AdaptativeColors.subtitle(
+                                "Modo Claro",
+                                _darkmode,
                               ),
-                              Tooltip(
-                                message:
-                                    "Evita que la pantalla se apague al estar en modo claro. Puede gastar más batería.",
-                                child: SwitchListTile(
-                                  title: AdaptativeColors.textBody(
-                                    "Mantener pantalla encendida",
+                              leading: Icon(Icons.light_mode_outlined),
+                            ),
+                          ),
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: AdaptativeColors.textTitle(
+                                    "General",
                                     _darkmode,
                                   ),
-                                  value: _keepAliveLight,
-                                  onChanged: (newkeepAliveLight) {
-                                    setState(() {
-                                      _keepAliveLight = newkeepAliveLight;
-                                      PreferencesValues.saveSetting(
-                                        SettingKeys.keepAwakeLight,
-                                        newkeepAliveLight,
-                                      );
-                                    });
-                                  },
+                                  leading: Icon(Icons.wb_sunny_outlined),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8.0,
-                                  right: 8,
+                                Tooltip(
+                                  message:
+                                      "Evita que la pantalla se apague al estar en modo claro. Puede gastar más batería.",
+                                  child: SwitchListTile(
+                                    title: AdaptativeColors.textBody(
+                                      "Mantener pantalla encendida",
+                                      _darkmode,
+                                    ),
+                                    value: _keepAliveLight,
+                                    onChanged: (newkeepAliveLight) {
+                                      setState(() {
+                                        _keepAliveLight = newkeepAliveLight;
+                                        PreferencesValues.saveSetting(
+                                          SettingKeys.keepAwakeLight,
+                                          newkeepAliveLight,
+                                        );
+                                      });
+                                    },
+                                  ),
                                 ),
-                                child: Divider(),
-                              ),
-                              //Slider para modificar el brillo en modo claro
-                              sliderBrightnessWhite(context),
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
+                                ),
+                                //Slider para modificar el brillo en modo claro
+                                sliderBrightnessWhite(context),
+                              ],
+                            ),
                           ),
-                        ),
-                        Card(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: AdaptativeColors.textTitle(
-                                  "Vista Previa",
-                                  _darkmode,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8.0,
-                                  right: 8,
-                                ),
-                                child: Divider(),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 400,
-                                  child: mainSimulate(),
-                                ),
-                              ),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0, right: 8),
+                            child: Divider(),
                           ),
-                        ),
-                      ],
+                          //Selección de colores
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: AdaptativeColors.textTitle(
+                                    "Colores",
+                                    _darkmode,
+                                  ),
+                                  leading: Icon(Icons.palette_outlined),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
+                                ),
+                                Tooltip(
+                                  message:
+                                      "Usa los colores de por defecto (Usualmente del sistema en Android)",
+                                  child: SwitchListTile(
+                                    title: AdaptativeColors.textBody(
+                                      "Usar colores del sistema",
+                                      _darkmode,
+                                    ),
+                                    value: _useSystemThemeLight,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _useSystemThemeLight = value;
+                                        PreferencesValues.saveSetting(
+                                          SettingKeys.useSystemThemeLight,
+                                          value,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ),
+                                if (_useSystemThemeLight == false)
+                                  ColorSelectorTile(
+                                    text: "Color en modo Claro",
+                                    currentColor: _lightColor,
+                                    presetColors: AdaptativeColors.lightColors,
+                                    darkMode: _darkmode,
+                                    onColorChanged: (color) {
+                                      setState(() {
+                                        _lightColor = color;
+                                        PreferencesValues.saveSetting(
+                                          SettingKeys.lightColor,
+                                          color,
+                                        );
+                                      });
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: AdaptativeColors.textTitle(
+                                    "Vista Previa",
+                                    _darkmode,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    right: 8,
+                                  ),
+                                  child: Divider(),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 400,
+                                    child: mainSimulate(_darkmode),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -361,26 +467,36 @@ class _LightModeConfigScreenState extends State<LightModeConfigScreen> {
     );
   }
 
-  Scaffold mainSimulate() {
+  Widget mainSimulate(bool darkMode) {
     String text;
     if (_homeText) {
       text = "Cambio";
     } else {
       text = "";
     }
-    return Scaffold(
-      backgroundColor: AdaptativeColors.backgroundColor(false),
-      body: InkResponse(
-        onDoubleTap: () {},
-        child: Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-          alignment: Alignment.center,
-          child: Center(
-            //Texto que cambia dependiendo del modo de luz de la app
-            child: AdaptativeColors.textHomeTitle(text, false),
+    return Builder(
+      builder: (context) {
+        return Theme(
+          data: _useSystemThemeLight
+              ? AdaptativeColors.themeData(_darkmode)
+              : AdaptativeColors.themeData(false, seedColor: _lightColor),
+          child: Scaffold(
+            body: InkResponse(
+              focusColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              onDoubleTap: () {},
+              child: Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+                alignment: Alignment.center,
+                child: Center(
+                  //Texto que cambia dependiendo del modo de luz de la app
+                  child: AdaptativeColors.textHomeTitle(text, false),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 }

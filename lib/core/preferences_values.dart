@@ -10,7 +10,7 @@ class PreferencesValues {
   static void saveSetting(String key, dynamic value) async {
     final prefs = await SharedPreferences.getInstance();
     //Verificar dato existente usando el key, pueden haber datos del mismo tipo,
-    //así que no usaré el tipo de dato como identificador, ir añadiendo los que hay en core/settings_keys
+    //así que no usaré el tipo de dato como identificador, ir añadiendo los que sean necesarios y que hayan en core/settings_keys
     switch (key) {
       case SettingKeys.darkMode:
         await prefs.setBool(key, value);
@@ -68,9 +68,43 @@ class PreferencesValues {
         }
         await prefs.setDouble(key, value);
         break;
+      case SettingKeys.firstOpen:
+        //No hay necesidad de guardarlo, es para setearlo a false
+        await prefs.setBool(SettingKeys.firstOpen, false);
+        developer.log("SetBool para firstOpen llamado, puesto en false.");
+        break;
+      case SettingKeys.haptics:
+        await prefs.setBool(SettingKeys.haptics, value);
+        break;
+      case SettingKeys.hapticsMode:
+        if (value < 0 || value > 8) {
+          throw RangeError.range(
+            value,
+            0,
+            8,
+            "Intento de guardado para modo de haptics fuera de límites",
+          );
+        }
+        await prefs.setInt(SettingKeys.hapticsMode, value);
+      //Aparentemente los Color pueden devolver un int que puede ser recuperado
+      case SettingKeys.darkColor:
+        await prefs.setInt(key, value.value);
+        break;
+      case SettingKeys.lightColor: 
+        await prefs.setInt(key, value.value);
+        break;
+      
+      case SettingKeys.useSystemThemeDark:
+        await prefs.setBool(key, value);
+        break;
+
+      case SettingKeys.useSystemThemeLight:
+        await prefs.setBool(key, value);
+        break;
+        
       default:
         developer.log(
-          "Error: settingKey $key no encontrada o establecida. Valor $value no guardado. Contacta con tu mami xd",
+          "Error: settingKey $key no encontrada o establecida en el switch. Valor $value no guardado. Contacta con tu mami xd",
         );
     }
     developer.log("$key set to $value hecho");
@@ -99,7 +133,10 @@ class PreferencesValues {
   ///<br> La función de recarga de variables es personalizada para cada pantalla de configuración. <br>
   ///[keys] Lista de llaves de SettingKeys para borrar varias entradas.
   ///[loadVariablesFunction] Función para llamar la recarga de variables y regenerar los datos eliminados.
-  static void resetVariousSettings(List<String> keys, loadVariablesFunction) async {
+  static void resetVariousSettings(
+    List<String> keys,
+    loadVariablesFunction,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     developer.log("Eliminando serie de llaves...");
     for (String key in keys) {
