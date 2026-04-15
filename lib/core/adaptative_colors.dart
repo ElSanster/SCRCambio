@@ -1,4 +1,4 @@
-import 'dart:developer' as Developer;
+import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:scrcambio_app/core/text_styles.dart';
@@ -25,7 +25,7 @@ class AdaptativeColors {
   static ThemeData themeData(bool darkMode, {Color? seedColor}) {
     ThemeData theme;
     if (seedColor != null) {
-      Developer.log("Devolviendo tema custom: $seedColor");
+      developer.log("Devolviendo tema custom: $seedColor");
       theme = ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: seedColor,
