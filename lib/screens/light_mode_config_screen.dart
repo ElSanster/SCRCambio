@@ -30,7 +30,7 @@ class _LightModeConfigScreenState extends State<LightModeConfigScreen> {
   String _brightText = "Brillo";
   Color _darkColor = AdaptativeColors.backgroundColor(true);
   Color _lightColor = AdaptativeColors.backgroundColor(true);
-  bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
+  
   bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   @override
@@ -151,11 +151,6 @@ class _LightModeConfigScreenState extends State<LightModeConfigScreen> {
       } else {
         WakelockPlus.disable();
       }
-
-      //Cargar si se usa el tema del sistema en modo oscuro
-      _useSystemThemeDark =
-          prefs.getBool(SettingKeys.useSystemThemeDark) ??
-          DefaultValues.useSystemThemeDark;
 
       //Cargar si se usa el tema del sistema en modo claro
       _useSystemThemeLight =

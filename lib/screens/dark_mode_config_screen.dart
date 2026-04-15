@@ -31,7 +31,6 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
   Color _darkColor = AdaptativeColors.backgroundColor(true);
   Color _lightColor = AdaptativeColors.backgroundColor(true);
   bool _useSystemThemeDark = DefaultValues.useSystemThemeDark;
-  bool _useSystemThemeLight = DefaultValues.useSystemThemeLight;
 
   @override
   void initState() {
@@ -162,10 +161,6 @@ class _DarkModeConfigScreenState extends State<DarkModeConfigScreen> {
         prefs.getBool(SettingKeys.useSystemThemeDark) ??
         DefaultValues.useSystemThemeDark;
 
-    //Cargar si se usa el tema del sistema en modo claro
-    _useSystemThemeLight =
-        prefs.getBool(SettingKeys.useSystemThemeLight) ??
-        DefaultValues.useSystemThemeLight;
 
     //Cargar color personalizado de modo oscuro
     _darkColor = Color(

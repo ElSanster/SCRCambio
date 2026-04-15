@@ -144,7 +144,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
         "_keepAliveLight despues de loadSettings: $_keepAliveLight",
       );
 
-      //Setear firstOpen en caso de que el usuario abra la config antes que cambiar el modo de luz, o cuando presione el botón de reinicar configuracion
+      //Setear firstOpen en caso de que el usuario abra la config antes que cambiar el modo de luz, o cuando presione el botón de reiniciar configuracion
       if (prefs.getBool(SettingKeys.firstOpen) ??
           DefaultValues.firstOpen ||
               DefaultValues.forceMessagesDEBUG == false) {
@@ -225,308 +225,34 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                               false,
                               seedColor: _lightColor,
                             )),
-                child: ListView(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final bool isWide = constraints.maxWidth > 600;
+
+                    if (isWide) {
+                      // Pantalla ancha: 2 columnas
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Card(
-                            child: SwitchListTile(
-                              title: AdaptativeColors.textBody(
-                                "Modo Oscuro",
-                                _darkmode,
-                              ),
-                              secondary: _darkmode
-                                  ? Icon(Icons.dark_mode)
-                                  : Icon(Icons.light_mode),
-                              value: _darkmode,
-                              onChanged: (newDarkMode) {
-                                setState(() {
-                                  _darkmode = newDarkMode;
-                                  PreferencesValues.saveSetting(
-                                    SettingKeys.darkMode,
-                                    newDarkMode,
-                                  );
-                                });
-                              },
-                            ),
+                          Expanded(
+                            child: ListView(children: _leftColumnItems(true)),
                           ),
-                          Card(
-                            child: SwitchListTile(
-                              title: AdaptativeColors.textBody(
-                                "Titulo Cambio",
-                                _darkmode,
-                              ),
-                              subtitle: AdaptativeColors.smallText(
-                                "Habilita el titulo \"Cambio\" en la pantalla principal.",
-                                _darkmode,
-                              ),
-                              secondary: Icon(Icons.abc),
-                              value: _homeText,
-                              onChanged: (newHomeText) {
-                                setState(() {
-                                  _homeText = newHomeText;
-                                  PreferencesValues.saveSetting(
-                                    SettingKeys.homeText,
-                                    newHomeText,
-                                  );
-                                });
-                              },
-                            ),
-                          ),
-
-                          if (Platform.isAndroid)
-                            Card(
-                              child: Column(
-                                children: [
-                                  SwitchListTile(
-                                    title: AdaptativeColors.textBody(
-                                      "Vibración al cambio",
-                                      _darkmode,
-                                    ),
-                                    secondary: Icon(Icons.vibration),
-                                    value: _haptics,
-                                    onChanged: (newHaptics) {
-                                      setState(() {
-                                        _haptics = newHaptics;
-                                        PreferencesValues.saveSetting(
-                                          SettingKeys.haptics,
-                                          newHaptics,
-                                        );
-                                      });
-                                    },
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Row(
-                                      children: [
-                                        AdaptativeColors.textBody(
-                                          "Tipo de Vibración",
-                                          _darkmode,
-                                        ),
-                                        Spacer(),
-                                        DropdownMenu(
-                                          dropdownMenuEntries:
-                                              <DropdownMenuEntry<int>>[
-                                                DropdownMenuEntry(
-                                                  value: 0,
-                                                  label: "Ligera",
-                                                ),
-                                                DropdownMenuEntry(
-                                                  value: 1,
-                                                  label: "Suave",
-                                                ),
-                                                DropdownMenuEntry(
-                                                  value: 2,
-                                                  label: "Mediana",
-                                                ),
-                                                DropdownMenuEntry(
-                                                  value: 3,
-                                                  label: "Pesada",
-                                                ),
-                                                DropdownMenuEntry(
-                                                  value: 4,
-                                                  label: "Rigida",
-                                                ),
-                                              ],
-                                          onSelected: (value) {
-                                            if (value != null &&
-                                                !(value < 0 || value > 8)) {
-                                              setState(() {
-                                                _hapticsMode = value;
-                                              });
-                                              Dohaptics.dohaptics(value, true);
-                                              PreferencesValues.saveSetting(
-                                                SettingKeys.hapticsMode,
-                                                value,
-                                              );
-                                            }
-                                          },
-                                          enabled: _haptics,
-                                          width: 200,
-                                          hintText: "Ligera",
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                          Card(
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  title: AdaptativeColors.subtitle(
-                                    "Modo Claro",
-                                    _darkmode,
-                                  ),
-                                  leading: Icon(Icons.light_mode_outlined),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                Tooltip(
-                                  message:
-                                      "Evita que la pantalla se apague al estar en modo claro. Puede gastar más batería.",
-                                  child: SwitchListTile(
-                                    title: AdaptativeColors.textBody(
-                                      "Mantener pantalla encendida",
-                                      _darkmode,
-                                    ),
-                                    value: _keepAliveLight,
-                                    onChanged: (newkeepAliveLight) {
-                                      setState(() {
-                                        _keepAliveLight = newkeepAliveLight;
-                                        PreferencesValues.saveSetting(
-                                          SettingKeys.keepAwakeLight,
-                                          newkeepAliveLight,
-                                        );
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                //Slider para modificar el brillo en modo claro
-                                sliderBrightnessWhite(context),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                ListTile(
-                                  trailing: Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                  ),
-                                  title: AdaptativeColors.textBody(
-                                    "Más Opciones",
-                                    _darkmode,
-                                  ),
-                                  onTap: () {
-                                    developer.log(
-                                      "Más opciones del modo claro presionado.",
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LightModeConfigScreen(),
-                                      ),
-                                    ).then((_) => _loadSettings());
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  title: AdaptativeColors.subtitle(
-                                    "Modo Oscuro",
-                                    _darkmode,
-                                  ),
-                                  leading: Icon(Icons.dark_mode_outlined),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                Tooltip(
-                                  message:
-                                      "Evita que la pantalla se apague en modo oscuro, Puede gastar más batería",
-                                  child: SwitchListTile(
-                                    title: AdaptativeColors.textBody(
-                                      "Mantener pantalla encendida",
-                                      _darkmode,
-                                    ),
-                                    value: _keepAliveDark,
-                                    onChanged: (newkeepAliveDark) {
-                                      setState(() {
-                                        _keepAliveDark = newkeepAliveDark;
-                                        PreferencesValues.saveSetting(
-                                          SettingKeys.keepAwakeDark,
-                                          newkeepAliveDark,
-                                        );
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                //Slider para modificar el brillo en modo oscuro
-                                sliderBrightnessDark(context),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8.0,
-                                    right: 8,
-                                  ),
-                                  child: Divider(),
-                                ),
-                                ListTile(
-                                  trailing: Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                  ),
-                                  title: AdaptativeColors.textBody(
-                                    "Más Opciones",
-                                    _darkmode,
-                                  ),
-                                  onTap: () {
-                                    developer.log(
-                                      "Más opciones del modo claro presionado.",
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const DarkModeConfigScreen(),
-                                      ),
-                                    ).then((_) => _loadSettings());
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          Tooltip(
-                            message:
-                                "Reincia TODAS las configuraciones a por defecto.",
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: AdaptativeColors.elevatedButton(
-                                "Reiniciar toda la configuración",
-                                context,
-                                _darkmode,
-                                () {
-                                  _callConfirmResetDialog(context, _darkmode);
-                                },
-                              ),
-                            ),
+                          VerticalDivider(width: 1),
+                          Expanded(
+                            child: ListView(children: _rightColumnItems(true)),
                           ),
                         ],
-                      ),
-                    ),
-                  ],
+                      );
+                    } else {
+                      // Pantalla angosta: 1 columna normal
+                      return ListView(
+                        children: [
+                          ..._leftColumnItems(false),
+                          ..._rightColumnItems(false),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ),
             ),
@@ -736,46 +462,319 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     showDialog(
       context: contexto,
       builder: (BuildContext ctx) => Theme(
-        data: AdaptativeColors.themeData(darkMode , seedColor: _darkColor),
-          child: AlertDialog(
-            backgroundColor: AdaptativeColors.backgroundColor(darkMode),
-            title: AdaptativeColors.textTitle(
-              "Reiniciar Configuración",
-              darkMode,
-            ),
-            content: AdaptativeColors.textBody(
-              "¿Está seguro de reiniciar la configuración a estado de fábrica?${DefaultValues.forceMessagesDEBUG ? "\nMODO FORZAR MENSAJE ACTIVADO, Avisale a Sanster si ves esto." : ""}",
-              darkMode,
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: TextButton(
-                  onPressed: () {
-                    developer.log("Resetear datos Aceptado");
-                    PreferencesValues.resetAllSettings(() {
-                      _loadSettings();
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: AdaptativeColors.textBody("Confirmar", darkMode),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: AdaptativeColors.elevatedButton(
-                  "Cancelar",
-                  contexto,
-                  darkMode,
-                  () {
-                    developer.log("Resetear datos Denegado");
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-            ],
+        data: AdaptativeColors.themeData(darkMode, seedColor: _darkColor),
+        child: AlertDialog(
+          backgroundColor: AdaptativeColors.backgroundColor(darkMode),
+          title: AdaptativeColors.textTitle(
+            "Reiniciar Configuración",
+            darkMode,
           ),
+          content: AdaptativeColors.textBody(
+            "¿Está seguro de reiniciar la configuración a estado de fábrica?${DefaultValues.forceMessagesDEBUG ? "\nMODO FORZAR MENSAJE ACTIVADO, Avisale a Sanster si ves esto." : ""}",
+            darkMode,
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: TextButton(
+                onPressed: () {
+                  developer.log("Resetear datos Aceptado");
+                  PreferencesValues.resetAllSettings(() {
+                    _loadSettings();
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: AdaptativeColors.textBody("Confirmar", darkMode),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: AdaptativeColors.elevatedButton(
+                "Cancelar",
+                contexto,
+                darkMode,
+                () {
+                  developer.log("Resetear datos Denegado");
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
         ),
+      ),
     );
+  }
+
+  List<Widget> _leftColumnItems(bool iswide) {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Card(
+              child: SwitchListTile(
+                title: AdaptativeColors.textBody("Modo Oscuro", _darkmode),
+                secondary: _darkmode
+                    ? Icon(Icons.dark_mode)
+                    : Icon(Icons.light_mode),
+                value: _darkmode,
+                onChanged: (newDarkMode) {
+                  setState(() {
+                    _darkmode = newDarkMode;
+                    PreferencesValues.saveSetting(
+                      SettingKeys.darkMode,
+                      newDarkMode,
+                    );
+                  });
+                },
+              ),
+            ),
+            if (iswide == false)
+            Card(
+              child: SwitchListTile(
+                title: AdaptativeColors.textBody("Titulo Cambio", _darkmode),
+                subtitle: AdaptativeColors.smallText(
+                  "Habilita el titulo \"Cambio\" en la pantalla principal.",
+                  _darkmode,
+                ),
+                secondary: Icon(Icons.abc),
+                value: _homeText,
+                onChanged: (newHomeText) {
+                  setState(() {
+                    _homeText = newHomeText;
+                    PreferencesValues.saveSetting(
+                      SettingKeys.homeText,
+                      newHomeText,
+                    );
+                  });
+                },
+              ),
+            ),
+            if (Platform.isAndroid)
+              Card(
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: AdaptativeColors.textBody(
+                        "Vibración al cambio",
+                        _darkmode,
+                      ),
+                      secondary: Icon(Icons.vibration),
+                      value: _haptics,
+                      onChanged: (newHaptics) {
+                        setState(() {
+                          _haptics = newHaptics;
+                          PreferencesValues.saveSetting(
+                            SettingKeys.haptics,
+                            newHaptics,
+                          );
+                        });
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          AdaptativeColors.textBody(
+                            "Tipo de Vibración",
+                            _darkmode,
+                          ),
+                          Spacer(),
+                          DropdownMenu(
+                            dropdownMenuEntries: <DropdownMenuEntry<int>>[
+                              DropdownMenuEntry(value: 0, label: "Ligera"),
+                              DropdownMenuEntry(value: 1, label: "Suave"),
+                              DropdownMenuEntry(value: 2, label: "Mediana"),
+                              DropdownMenuEntry(value: 3, label: "Pesada"),
+                              DropdownMenuEntry(value: 4, label: "Rigida"),
+                            ],
+                            onSelected: (value) {
+                              if (value != null && !(value < 0 || value > 8)) {
+                                setState(() {
+                                  _hapticsMode = value;
+                                });
+                                Dohaptics.dohaptics(value, true);
+                                PreferencesValues.saveSetting(
+                                  SettingKeys.hapticsMode,
+                                  value,
+                                );
+                              }
+                            },
+                            enabled: _haptics,
+                            width: 200,
+                            hintText: "Ligera",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: AdaptativeColors.subtitle("Modo Claro", _darkmode),
+                    leading: Icon(Icons.light_mode_outlined),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  Tooltip(
+                    message:
+                        "Evita que la pantalla se apague al estar en modo claro. Puede gastar más batería.",
+                    child: SwitchListTile(
+                      title: AdaptativeColors.textBody(
+                        "Mantener pantalla encendida",
+                        _darkmode,
+                      ),
+                      value: _keepAliveLight,
+                      onChanged: (newkeepAliveLight) {
+                        setState(() {
+                          _keepAliveLight = newkeepAliveLight;
+                          PreferencesValues.saveSetting(
+                            SettingKeys.keepAwakeLight,
+                            newkeepAliveLight,
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  //Slider para modificar el brillo en modo claro
+                  sliderBrightnessWhite(context),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  ListTile(
+                    trailing: Icon(Icons.arrow_forward_ios_rounded),
+                    title: AdaptativeColors.textBody("Más Opciones", _darkmode),
+                    onTap: () {
+                      developer.log("Más opciones del modo claro presionado.");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LightModeConfigScreen(),
+                        ),
+                      ).then((_) => _loadSettings());
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _rightColumnItems(bool iswide) {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            if (iswide == true)
+            Card(
+              child: SwitchListTile(
+                title: AdaptativeColors.textBody("Titulo Cambio", _darkmode),
+                subtitle: AdaptativeColors.smallText(
+                  "Habilita el titulo \"Cambio\" en la pantalla principal.",
+                  _darkmode,
+                ),
+                secondary: Icon(Icons.abc),
+                value: _homeText,
+                onChanged: (newHomeText) {
+                  setState(() {
+                    _homeText = newHomeText;
+                    PreferencesValues.saveSetting(
+                      SettingKeys.homeText,
+                      newHomeText,
+                    );
+                  });
+                },
+              ),
+            ),
+
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: AdaptativeColors.subtitle("Modo Oscuro", _darkmode),
+                    leading: Icon(Icons.dark_mode_outlined),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  Tooltip(
+                    message:
+                        "Evita que la pantalla se apague en modo oscuro, Puede gastar más batería",
+                    child: SwitchListTile(
+                      title: AdaptativeColors.textBody(
+                        "Mantener pantalla encendida",
+                        _darkmode,
+                      ),
+                      value: _keepAliveDark,
+                      onChanged: (newkeepAliveDark) {
+                        setState(() {
+                          _keepAliveDark = newkeepAliveDark;
+                          PreferencesValues.saveSetting(
+                            SettingKeys.keepAwakeDark,
+                            newkeepAliveDark,
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  //Slider para modificar el brillo en modo oscuro
+                  sliderBrightnessDark(context),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8),
+                    child: Divider(),
+                  ),
+                  ListTile(
+                    trailing: Icon(Icons.arrow_forward_ios_rounded),
+                    title: AdaptativeColors.textBody("Más Opciones", _darkmode),
+                    onTap: () {
+                      developer.log("Más opciones del modo claro presionado.");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DarkModeConfigScreen(),
+                        ),
+                      ).then((_) => _loadSettings());
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Tooltip(
+              message: "Reincia TODAS las configuraciones a por defecto.",
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AdaptativeColors.elevatedButton(
+                  "Reiniciar toda la configuración",
+                  context,
+                  _darkmode,
+                  () {
+                    _callConfirmResetDialog(context, _darkmode);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }
