@@ -30,7 +30,8 @@ Serie de comandos para eliminar una tag desde ambos lados, realizar etiquetado, 
 **Esto requiere ya haber creado la commit sin pushear**
 
 ```powershell
-git tag -d v0.2.0 #Cambiar v*.*.* o la versión anterior a la tag actual
+#Cambiar v*.*.* o la versión anterior a la tag actual
+git tag -d v0.2.0 
 git push origin --delete v0.2.0 
 git tag -a v0.2.0 -m "Overhaul color,configs,haptics and accesibility 0.2.0"
 git push --atomic origin main v*.*.*
