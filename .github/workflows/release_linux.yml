@@ -1,0 +1,34 @@
+name: Build and Release Linux
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+
+      - name: Flutter Setup
+        uses: subosito/flutter-action@v2.23.0
+        with:
+          channel: stable
+
+      - name: Build .deb y .rpm
+        shell: bash
+        run: bash ./.github/release_linux.sh
+
+      - name: Release Linux builds
+        uses: softprops/action-gh-release@v2
+        with:
+          make_latest: true
+          token: ${{ secrets.RELEASE_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          body_path: .github/release_body.md
+          files: |
+            release/Linux-x64.deb
+            release/Linux-x64.rpm

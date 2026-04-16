@@ -16,52 +16,53 @@ class Dohaptics {
   ///<br>7 para error
   ///<br>8 para warning
   static void dohaptics(int hapticsMode, bool haptics) async {
-    developer.log("Haptics Disparada: $hapticsMode");
     //Dependiendo del modo escogido, poner el tipo de haptics a intentar
-    HapticsType ht = HapticsType.light;
-    switch (hapticsMode) {
-      case 0:
-        ht = HapticsType.light;
-        break;
-      case 1:
-        ht = HapticsType.soft;
-        break;
-      case 2:
-        ht = HapticsType.medium;
-        break;
-      case 3:
-        ht = HapticsType.heavy;
-        break;
-      case 4:
-        ht = HapticsType.rigid;
-        break;
-      case 5:
-        ht = HapticsType.selection;
-        break;
-      case 6:
-        ht = HapticsType.success;
-        break;
-      case 7:
-        ht = HapticsType.error;
-        break;
-      case 8: 
-        ht = HapticsType.warning;
-      default:
-        developer.log("HapticsMode fuera de límites, usando default.");
-        dohaptics(DefaultValues.hapticsMode, haptics);
-        return;
-    }
-    //Verificar sistema operativo que usualmente tiene vibración
-    if (Platform.isAndroid || Platform.isIOS) {
-      developer.log("Haptics: Plataforma Android/iOS detectada. Verificando haptics.");
-      final canVibrate = await Haptics.canVibrate(); //Verificar haptics, puede que el dispositivo no pueda hacerlo a pesar de usar un OS
-      if (haptics && canVibrate) {
-        developer.log("Haptics: Positivo para vibración");
-        await Haptics.vibrate(ht); //Aquí es donde se hace la vibración
-      } else {
-        developer.log(
-          "ERROR: No se puede usar vibración a pesar de estar en Android/iOS, consulta con tu madre de confianza.",
-        );
+    developer.log("Haptics llamadas: $haptics Tipo: $hapticsMode");
+    if (haptics == false) {
+      developer.log("Haptics NO disparadas. (Desactivadas)");
+      return;
+    } else {
+      switch (hapticsMode) {
+        case 0:
+          await Haptics.vibrate(HapticsType.light);
+          developer.log("Haptics Disparada (light): $hapticsMode");
+          break;
+        case 1:
+          await Haptics.vibrate(HapticsType.soft);
+          developer.log("Haptics Disparada (Soft): $hapticsMode");
+          break;
+        case 2:
+          await Haptics.vibrate(HapticsType.medium);
+          developer.log("Haptics Disparada (Medium): $hapticsMode");
+          break;
+        case 3:
+          await Haptics.vibrate(HapticsType.heavy);
+          developer.log("Haptics Disparada (Heavy): $hapticsMode");
+          break;
+        case 4:
+          await Haptics.vibrate(HapticsType.rigid);
+          developer.log("Haptics Disparada (Rigid): $hapticsMode");
+          break;
+        case 5:
+          await Haptics.vibrate(HapticsType.selection);
+          developer.log("Haptics Disparada (Selection): $hapticsMode");
+          break;
+        case 6:
+          await Haptics.vibrate(HapticsType.success);
+          developer.log("Haptics Disparada (Success): $hapticsMode");
+          break;
+        case 7:
+          await Haptics.vibrate(HapticsType.error);
+          developer.log("Haptics Disparada (Error): $hapticsMode");
+          break;
+        case 8:
+          await Haptics.vibrate(HapticsType.warning);
+          developer.log("Haptics Disparada (Warning): $hapticsMode");
+          break;
+        default:
+          developer.log("HapticsMode fuera de límites, usando default.");
+          await Haptics.vibrate(HapticsType.soft);
+          break;
       }
     }
   }

@@ -1,9 +1,13 @@
-#Este es un script para generar los builds de android del tag en ubuntu
+#!/bin/bash
+# Script para generar los builds de android usando flutter_distributor
 
 echo "----Obtener paquetes (flutter pub get)"
 flutter pub get
 
-echo "----Generando key.properties"
+echo "----Instalar flutter_distributor"
+dart pub global activate flutter_distributor
+
+echo "----Generar key.properties para firmado"
 cd android
 touch key.properties
 echo storePassword=$RELEASE_STOREPASSWORD >> key.properties
@@ -12,19 +16,18 @@ echo keyAlias=$RELEASE_KEYALIAS >> key.properties
 echo storeFile=release.jks >> key.properties
 cd -
 
-echo "----Generar apk universal (flutter build apk --flavor production)"
-flutter build apk --flavor production
-
-echo "----Generar apks por arquitectura (flutter build apk --split-per-abi --flavor production)"
-flutter build apk --split-per-abi --flavor production
-
-echo "----Crear directorio release si no existe"
+echo "----Crear directorio release"
 mkdir -p release
 
-echo "----Renombrar apks correspondientes a su arquitectura (con mv en build/app/outputs/flutter-apk/)"
-mv build/app/outputs/flutter-apk/app-armeabi-v7a-production-release.apk release/Android-armeabi-v7a.apk
-mv build/app/outputs/flutter-apk/app-arm64-v8a-production-release.apk release/Android-arm64-v8a.apk
-mv build/app/outputs/flutter-apk/app-x86_64-production-release.apk release/Android-x86-64.apk
-mv build/app/outputs/flutter-apk/app-production-release.apk release/Android-universal.apk
+echo "----Generar APK universal"
+flutter_distributor package --platform android --targets apk --flavor production --skip-clean
+mv dist/*/*.apk release/Android-universal.apk
 
-echo "Finalizado generación de apks y renombrado"
+echo "----Generar APKs por arquitectura"
+flutter_distributor package --platform android --targets apk --flavor production \
+  --build-param="--split-per-abi" --skip-clean
+mv dist/*/*armeabi-v7a*.apk release/Android-armeabi-v7a.apk
+mv dist/*/*arm64-v8a*.apk release/Android-arm64-v8a.apk
+mv dist/*/*x86_64*.apk release/Android-x86-64.apk
+
+echo "----Finalizado generación de APKs"

@@ -593,7 +593,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                                 setState(() {
                                   _hapticsMode = value;
                                 });
-                                Dohaptics.dohaptics(value, true);
+                                Dohaptics.dohaptics(value, _haptics);
                                 PreferencesValues.saveSetting(
                                   SettingKeys.hapticsMode,
                                   value,

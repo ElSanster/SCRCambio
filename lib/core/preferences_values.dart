@@ -86,6 +86,7 @@ class PreferencesValues {
           );
         }
         await prefs.setInt(SettingKeys.hapticsMode, value);
+        break;
       //Aparentemente los Color pueden devolver un int que puede ser recuperado
       case SettingKeys.darkColor:
         await prefs.setInt(key, value.value);

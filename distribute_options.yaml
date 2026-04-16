@@ -1,0 +1,10 @@
+# distribute_options.yaml — en la raíz del proyecto
+output: dist/
+targets:
+  - android
+  - linux
+  - windows
+
+variables:
+  APP_NAME: SCRcambio
+  PACKAGE_NAME: scrcambio

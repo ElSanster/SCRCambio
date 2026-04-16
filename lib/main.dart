@@ -179,7 +179,7 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
       developer.log("_firstOpen: $_firstOpen");
 
       //Cargar vibracion activada
-      _haptics = prefs.getBool(SettingKeys.haptics) ?? DefaultValues.firstOpen;
+      _haptics = prefs.getBool(SettingKeys.haptics) ?? DefaultValues.haptics;
       developer.log("_haptics: $_haptics");
 
       //Cargar tipo de vibración
@@ -229,10 +229,16 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
         WakelockPlus.disable();
       }
     });
+    
     Dohaptics.dohaptics(_hapticsMode,_haptics);
+
     bool wakelockPlusEnabled = await WakelockPlus.enabled;
     developer.log(
-      "Switch _darkMode: $_darkMode, brillo:${_darkMode ? _brightnessDark : _brightnessLight} _opacity $_opacity wakelockPlus habilitado: $wakelockPlusEnabled",
+      "Switch _darkMode: $_darkMode |"
+      "brillo:${_darkMode ? _brightnessDark : _brightnessLight} |"
+      "_opacity $_opacity |"
+      "wakelockPlus habilitado: $wakelockPlusEnabled |"
+      "hapticas: $_haptics, Tipo:$_hapticsMode |"
     );
   }
 
