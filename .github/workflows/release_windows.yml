@@ -1,30 +1,32 @@
 name: Build and Release Windows
+
 on:
   push:
-    branches: [ main ]
     tags:
-      -"v*.*.*"
+      - "v*.*.*"
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
 
       - name: Flutter Setup
-        uses: subosito/flutter-action@v2.21.0
+        uses: subosito/flutter-action@v2.23.0
         with:
           channel: stable
 
-      - name: build_release.ps1 para generar y comprimir windows build
+      - name: Generar instalador Windows
         shell: pwsh
         run: .\.github\release_windows.ps1
 
-      - name: Release windows build
-        uses: softprops/action-gh-release@v2.5.0
+      - name: Release Windows build
+        uses: softprops/action-gh-release@v2
         with:
           make_latest: true
-          token: ${{ secrets.RELEASE_TOKEN}}
-          tag_name: v0.1.2 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
-          body_path: .github\release_body.md
-          files: build/windows/x64/runner/Release/Windows-x64.zip
+          token: ${{ secrets.RELEASE_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          body_path: .github/release_body.md
+          files: release/Windows-x64.exe

@@ -4,7 +4,7 @@ on:
   push: 
     branches: [ main ]
     tags: 
-      -"v*.*.*"
+      - "v*.*.*"
 jobs: 
   build:
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Flutter Setup
-        uses: subosito/flutter-action@v2.21.0
+        uses: subosito/flutter-action@v2.23.0
         with:
           channel: stable
       
@@ -36,7 +36,7 @@ jobs:
         with:
           make_latest: true
           token: ${{ secrets.RELEASE_TOKEN }}
-          tag_name: v0.1.2 ##CAMBIAR ESTA VERSIÓN AL HACER EL PUSH Y TAMBIEN ACTUALIZAR EL CHANGELOG
+          tag_name: ${{ github.ref_name }}
           body_path: .github\release_body.md
           files: |
             release/Android-armeabi-v7a.apk

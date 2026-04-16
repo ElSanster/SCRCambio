@@ -39,6 +39,47 @@ class SettingKeys {
   ///Llave para obtener la opción de mantener la pantalla encendida modo claro
   ///<br />Tipo Bool
   static const String keepAwakeLight = "keepAliveLight";
+  
+  ///Llave para verificar si es la primera vez que el usuario abre la app
+  ///<br />Tipo Bool
+  static const String firstOpen = "firstOpen";
+
+  ///Llave para obtener la opción de vibraciones activadas
+  ///<br />Tipo Bool
+  static const String haptics = "haptics";
+
+  ///Llave para obtener el tipo de vibracion
+  ///<br />Tipo Int (0 a 4).
+  ///<br>0 para light
+  ///<br>1 para soft
+  ///<br>2 para medium
+  ///<br>3 para heavy
+  ///<br>4 para rigid
+  ///<br>5 para selection
+  ///<br>6 para success
+  ///<br>7 para error
+  ///<br>8 para warning
+  static const String hapticsMode = "hapticsType";
+
+  ///Llave para obtener el color en modo oscuro guardado
+  ///<br />En lugar de usar el defaultValue no existente, usar AdaptativeColors.themeData(true)
+  ///<br />Tipo Int, Usar  .value para obtener el color
+  static const String darkColor = "darkColor";
+
+  ///Llave para obtener el color en modo claro guardado
+  ///<br />En lugar de usar el defaultValue no existente, usar AdaptativeColors.themeData(false)
+  ///<br />Tipo Int
+  static const String lightColor = "lightColor";
+
+  ///LLave para obtener si el usuario usaría los colores de tema de su dispositivo para el modo oscuro,
+  ///false para usar colores predeterminados
+  ///<br />Tipo bool
+  static const String useSystemThemeDark = "systemThemeDark";
+
+  ///LLave para obtener si el usuario usaría los colores de tema de su dispositivo para el modo oscuro,
+  ///false para usar colores predeterminados
+  ///<br />Tipo bool
+  static const String useSystemThemeLight = "systemThemeLight";
 }
 
 ///Valores por defecto en caso de no haber datos en SharedPreferences
@@ -69,4 +110,28 @@ class DefaultValues {
 
   ///Mantener la pantalla encendida en modo claro por defecto
   static const bool keepAliveLight = true;
+  
+  ///Usuario abre la aplicación por primera vez
+  static const bool firstOpen = true;
+
+  ///DEBUG: Forzar mostrar dialogos de tutorial, PONER EN FALSE PARA BUILDS.
+  static const bool forceMessagesDEBUG = false;
+
+  ///Mensaje de bienvenida:
+  static const String welcomeMessage = "Bienvenido a SCR Cambio, para alternar el modo de luz, manten presionado en cualquer parte de la pantalla, O con la tecla espacio. OJO CON QUEMARSE LOS OJOS.";
+  
+  ///Mensaje sobre como ingresar a la configuración.
+  static const String settingsMessage = "Para Acceder a la configuración de la app, presiona dos veces y desliza a la izquierda.\n O puedes presionar el botón de Escape para ir y regresar de la confifguración.";
+
+  ///Activada la vibración
+  static const bool haptics = true;
+
+  ///Vibración por defecto ligera
+  static const int hapticsMode = 0;
+
+  ///Por defecto usar colores del sistema en modo oscuro
+  static const bool useSystemThemeDark = true;
+
+  ///Por defecto usar colores del sistema en modo claro
+  static const bool useSystemThemeLight = true;
 }
