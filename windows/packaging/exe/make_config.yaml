@@ -1,0 +1,7 @@
+app_name: SCRCambio
+app_version: 0.2.0
+publisher_name: ElSanster
+output_dir: dist/
+
+# Inno Setup config
+icon_path: windows/runner/resources/app_icon.ico

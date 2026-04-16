@@ -31,13 +31,13 @@ jobs:
           RELEASE_KEYPASSWORD: ${{ secrets.KEY_PASSWORD }}
           RELEASE_KEYALIAS: ${{ secrets.KEY_ALIAS }}
         
-      - name: Release andorid builds
+      - name: Release Android Builds
         uses: softprops/action-gh-release@v2.5.0
         with:
           make_latest: true
           token: ${{ secrets.RELEASE_TOKEN }}
           tag_name: ${{ github.ref_name }}
-          body_path: .github\release_body.md
+          body_path: .github/release_body.md
           files: |
             release/Android-armeabi-v7a.apk
             release/Android-arm64-v8a.apk
