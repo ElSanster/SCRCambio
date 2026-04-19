@@ -1,0 +1,31 @@
+display_name: SCRCambio
+package_name: scrcambio
+maintainer:
+  name: El_Sanster
+  email: jguarniz2007@gmail.com
+priority: optional
+section: x11
+installed_size: 1024
+essential: false
+icon: assets/logo.png
+
+postinstall_scripts:
+  - echo "SCRCambio instalado correctamente"
+postuninstall_scripts:
+  - echo "SCRCambio desinstalado correctamente"
+
+keywords:
+  - Light
+  - Application
+
+
+generic_name: SCRCambio
+
+categories:
+  - Flutter
+  - Light
+
+startup_notify: true
+# You can also specify [metainfo](https://freedesktop.org/software/appstream/docs/chap-Quickstart.html) file
+# which contains metadata of the app.
+# metainfo: linux/packaging/myappid.appdata.xml

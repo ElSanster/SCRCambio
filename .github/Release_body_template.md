@@ -34,5 +34,5 @@ Serie de comandos para eliminar una tag desde ambos lados, realizar etiquetado, 
 git tag -d v0.2.0 
 git push origin --delete v0.2.0 
 git tag -a v0.2.0 -m "Overhaul color,configs,haptics and accesibility 0.2.0"
-git push --atomic origin main v*.*.*
+git push --atomic origin main v0.2.0
 ```

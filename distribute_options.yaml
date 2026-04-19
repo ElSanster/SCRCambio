@@ -1,10 +1,67 @@
-# distribute_options.yaml — en la raíz del proyecto
 output: dist/
-targets:
-  - android
-  - linux
-  - windows
 
-variables:
-  APP_NAME: SCRcambio
-  PACKAGE_NAME: scrcambio
+releases:
+  # Job de Android — corre en ubuntu
+  - name: android
+    jobs:
+      - name: release-android-universal
+        package:
+          platform: android
+          target: apk
+          build_args:
+            flavor: production
+        publish_to: github
+
+      - name: release-android-arm64
+        package:
+          platform: android
+          target: apk
+          build_args:
+            flavor: production
+            split-per-abi: true
+            target-platform: android-arm64
+        publish_to: github
+
+      - name: release-android-arm
+        package:
+          platform: android
+          target: apk
+          build_args:
+            flavor: production
+            split-per-abi: true
+            target-platform: android-arm
+        publish_to: github
+
+      - name: release-android-x64
+        package:
+          platform: android
+          target: apk
+          build_args:
+            flavor: production
+            split-per-abi: true
+            target-platform: android-x64
+        publish_to: github
+
+  # Job de Windows — corre en windows
+  - name: windows
+    jobs:
+      - name: release-windows-zip
+        package:
+          platform: windows
+          target: zip
+        publish_to: github
+
+  # Job de Linux — corre en ubuntu
+  - name: linux
+    jobs:
+      - name: release-linux-deb
+        package:
+          platform: linux
+          target: deb
+        publish_to: github
+
+      - name: release-linux-rpm
+        package:
+          platform: linux
+          target: rpm
+        publish_to: github

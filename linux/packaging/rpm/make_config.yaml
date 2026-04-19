@@ -1,0 +1,24 @@
+icon: assets/logo.png
+summary: Usa la pantalla de tu dispositivo como linterna tenue.
+group: Application/Lantern
+vendor: El_Sanster
+packager: El_Sanster
+packagerEmail: jguarniz2007@gmail.com
+license: MIT
+url: https://github.com/fastforgedev/fastforge
+
+display_name: SCRCambio
+keywords:
+  - Light
+  - Application
+
+generic_name: SCRCambio
+
+categories:
+  - Flutter
+  - Light
+
+startup_notify: true
+# You can also specify [metainfo](https://freedesktop.org/software/appstream/docs/chap-Quickstart.html) file
+# which contains metadata of the app.
+# metainfo: linux/packaging/myappid.appdata.xml
