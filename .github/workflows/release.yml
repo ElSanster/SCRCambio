@@ -42,12 +42,39 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
-      - name: Build y Release Android
+      # Universal via fastforge
+      - name: Build y Release APK universal
         run: fastforge release --name android
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      # APKs por arquitectura directamente con flutter
+      - name: Build APKs por arquitectura
+        run: flutter build apk --split-per-abi --flavor production
+        env:
+          RELEASE_STOREPASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          RELEASE_KEYPASSWORD: ${{ secrets.KEY_PASSWORD }}
+          RELEASE_KEYALIAS: ${{ secrets.KEY_ALIAS }}
+
+      - name: Renombrar APKs
+        run: |
+          mkdir -p release
+          mv build/app/outputs/flutter-apk/app-arm64-v8a-production-release.apk release/Android-arm64-v8a.apk
+          mv build/app/outputs/flutter-apk/app-armeabi-v7a-production-release.apk release/Android-armeabi-v7a.apk
+          mv build/app/outputs/flutter-apk/app-x86_64-production-release.apk release/Android-x86-64.apk
+
+      # Subir los splits con nombres explícitos
+      - name: Release APKs por arquitectura
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          files: |
+            release/Android-arm64-v8a.apk
+            release/Android-armeabi-v7a.apk
+            release/Android-x86-64.apk
 
   # ─── Windows ────────────────────────────────────────────────
   release-windows:

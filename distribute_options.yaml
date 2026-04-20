@@ -1,7 +1,7 @@
 output: dist/
 
 releases:
-  # Job de Android — corre en ubuntu
+  # Job de Android (solo universal) — corre en ubuntu
   - name: android
     jobs:
       - name: release-android-universal
@@ -10,36 +10,6 @@ releases:
           target: apk
           build_args:
             flavor: production
-        publish_to: github
-
-      - name: release-android-arm64
-        package:
-          platform: android
-          target: apk
-          build_args:
-            flavor: production
-            split-per-abi: true
-            target-platform: android-arm64
-        publish_to: github
-
-      - name: release-android-arm
-        package:
-          platform: android
-          target: apk
-          build_args:
-            flavor: production
-            split-per-abi: true
-            target-platform: android-arm
-        publish_to: github
-
-      - name: release-android-x64
-        package:
-          platform: android
-          target: apk
-          build_args:
-            flavor: production
-            split-per-abi: true
-            target-platform: android-x64
         publish_to: github
 
   # Job de Windows — corre en windows
