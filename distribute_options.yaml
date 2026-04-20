@@ -54,14 +54,8 @@ releases:
   # Job de Linux — corre en ubuntu
   - name: linux
     jobs:
-      - name: release-linux-deb
+      - name: release-linux-appimage
         package:
           platform: linux
-          target: deb
-        publish_to: github
-
-      - name: release-linux-rpm
-        package:
-          platform: linux
-          target: rpm
+          target: appimage
         publish_to: github

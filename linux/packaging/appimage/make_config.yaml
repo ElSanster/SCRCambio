@@ -1,0 +1,16 @@
+# linux/packaging/appimage/make_config.yaml
+display_name: SCRCambio
+
+icon: assets/logo.png 
+
+generic_name: Linterna y Cambio de Brillo
+
+keywords:
+  - Linterna
+  - Brillo
+  - SCRCambio
+
+categories:
+  - Utility
+  
+startup_notify: true
