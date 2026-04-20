@@ -45,10 +45,10 @@ releases:
   # Job de Windows — corre en windows
   - name: windows
     jobs:
-      - name: release-windows-zip
+      - name: release-windows-exe
         package:
           platform: windows
-          target: zip
+          target: exe
         publish_to: github
 
   # Job de Linux — corre en ubuntu

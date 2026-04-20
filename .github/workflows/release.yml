@@ -60,6 +60,10 @@ jobs:
         uses: subosito/flutter-action@v2.23.0
         with:
           channel: stable
+          
+      - name: Instalar Inno Setup
+        run: choco install innosetup -y
+        shell: pwsh
 
       - name: Instalar fastforge
         run: dart pub global activate fastforge
@@ -110,6 +114,12 @@ jobs:
 
       - name: flutter pub get
         run: flutter pub get
+
+      - name: Install appimagetool
+        run: |
+          wget -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          sudo mv appimagetool /usr/local/bin/
 
       - name: Build y Release Linux
         run: fastforge release --name linux

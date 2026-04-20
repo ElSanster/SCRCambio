@@ -2,6 +2,8 @@
 # Do not use the same AppId value in installers for other applications.
 app_id: com.elsanster.scrcambio
 publisher: El_Sanster
+output_dir: dist/
+icon_path: windows\runner\resources\app_icon.ico
 publisher_url: https://github.com/ElSanster/SCRCambio
 display_name: SCRCambio
 create_desktop_icon: true
