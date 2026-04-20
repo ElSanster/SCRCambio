@@ -124,42 +124,37 @@ jobs:
     steps:
       - name: Eliminar assets existentes del release
         run: |
-          # Obtener el ID del release para el tag actual
-          RELEASE_ID=$(curl -s \
-            -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
-            | python3 -c "import sys,json; data=json.load(sys.stdin); print(data.get('id',''))")
-          
-          if [ -z "$RELEASE_ID" ]; then
-            echo "No existe release para este tag aún, continuando."
+          $releaseResponse = Invoke-RestMethod `
+            -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/tags/$env:GITHUB_REF_NAME" `
+            -Headers @{ Authorization = "token $env:RELEASE_TOKEN"; Accept = "application/vnd.github.v3+json" } `
+            -ErrorAction SilentlyContinue
+
+          if (-not $releaseResponse -or -not $releaseResponse.id) {
+            Write-Host "No existe release para este tag aún, continuando."
             exit 0
-          fi
+          }
 
-          echo "Release ID: $RELEASE_ID"
+          $releaseId = $releaseResponse.id
+          Write-Host "Release ID: $releaseId"
 
-          # Obtener lista de assets y eliminar los de esta plataforma
-          curl -s \
-            -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets" \
-            | python3 -c "
-          import sys, json
-          assets = json.load(sys.stdin)
-          for a in assets:
-              print(a['id'], a['name'])
-          " | while read ASSET_ID ASSET_NAME; do
-            if [[ "$ASSET_NAME" == *"$PLATFORM_PREFIX"* ]]; then
-              echo "Eliminando asset: $ASSET_NAME (ID: $ASSET_ID)"
-              curl -s -X DELETE \
-                -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID"
-            fi
-          done
+          $assets = Invoke-RestMethod `
+            -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/$releaseId/assets" `
+            -Headers @{ Authorization = "token $env:RELEASE_TOKEN"; Accept = "application/vnd.github.v3+json" }
+
+          foreach ($asset in $assets) {
+            if ($asset.name -like "*Windows*") {
+              Write-Host "Eliminando: $($asset.name)"
+              Invoke-RestMethod -Method Delete `
+                -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/assets/$($asset.id)" `
+                -Headers @{ Authorization = "token $env:RELEASE_TOKEN"; Accept = "application/vnd.github.v3+json" }
+            }
+          }
+        shell: pwsh
         env:
-          PLATFORM_PREFIX: ${{ matrix.platform_prefix }}
-
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
