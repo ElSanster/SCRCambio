@@ -1,7 +1,5 @@
 import 'dart:developer' as developer;
-import 'dart:io';
 import 'package:haptic_feedback/haptic_feedback.dart';
-import 'package:scrcambio_app/core/settings_keys.dart';
 
 class Dohaptics {
   ///Solicitar una vibración,<br>
